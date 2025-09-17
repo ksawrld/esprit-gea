@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Compteur - Tombola</title>
+<style>
+  :root{--bg:#0f1724;--card:#0b1220;--accent:#38bdf8;--muted:#94a3b8;}
+  body{margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,"Helvetica Neue",Arial;background:linear-gradient(180deg,#021226 0%, #041428 100%);color:#e6eef6;display:flex;align-items:center;justify-content:center;height:100vh;padding:20px}
+  .card{width:100%;max-width:760px;background:rgba(255,255,255,0.03);border-radius:12px;padding:22px;box-shadow:0 10px 30px rgba(2,6,23,0.7)}
+  h1{margin:0 0 8px;font-size:20px}
+  .big{font-size:44px;font-weight:700;letter-spacing:-1px}
+  .muted{color:var(--muted);font-size:14px}
+  .bar{height:18px;background:rgba(255,255,255,0.06);border-radius:10px;overflow:hidden;margin:18px 0}
+  .fill{height:100%;width:0;background:linear-gradient(90deg,var(--accent),#60a5fa);display:flex;align-items:center;justify-content:center;color:#022;white-space:nowrap;font-weight:700;transition:width 800ms cubic-bezier(.2,.9,.2,1)}
+  .thresholds{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
+  .th{padding:8px 10px;border-radius:8px;background:rgba(255,255,255,0.02);font-size:13px;display:flex;gap:8px;align-items:center}
+  .th.locked{opacity:0.5}
+  .th.unlocked{background:linear-gradient(90deg,#073b3f,#0b6b6b);box-shadow:0 6px 18px rgba(3,98,88,0.18)}
+  .footer{display:flex;justify-content:space-between;align-items:center;margin-top:18px;gap:10px;flex-wrap:wrap}
+  button{background:transparent;border:1px solid rgba(255,255,255,0.06);padding:8px 12px;border-radius:8px;color:inherit;cursor:pointer}
+  .small{font-size:13px}
+</style>
+</head>
+<body>
+<main class="card" role="main" aria-live="polite">
+  <h1>Compteur de ventes — Tombola</h1>
+  <div class="muted small">Partage ce lien pour que tout le monde voie l'avancement et les paliers débloqués.</div>
+
+  <div style="display:flex;align-items:center;gap:18px;margin-top:14px">
+    <div>
+      <div class="big" id="count">0</div>
+      <div class="muted small">tickets vendus</div>
+    </div>
+    <div style="flex:1">
+      <div class="bar" aria-hidden="true"><div class="fill" id="fill">0%</div></div>
+      <div id="nextThreshold" class="muted small"></div>
+    </div>
+  </div>
+
+  <div class="thresholds" id="thresholds"></div>
+
+  <div class="footer">
+    <div class="muted small">Dernière mise à jour : <span id="updated">—</span></div>
+    <div style="display:flex;gap:8px">
+      <button id="refresh">Actualiser</button>
+      <button id="copy">Copier lien de partage</button>
+    </div>
+  </div>
+</main>
+
+<script>
+/*
+ Config: change COUNTER_JSON_URL to where counter.json is hosted.
+ Example: "https://raw.githubusercontent.com/tonRepo/compteur/main/counter.json"
+*/
+const COUNTER_JSON_URL = './counter.json'; // <-- change si besoin
+const AUTO_REFRESH_SECONDS = 30; // auto refresh viewers (30s)
+
+async function loadData(){
+  try{
+    const r = await fetch(COUNTER_JSON_URL, {cache: "no-store"});
+    if(!r.ok) throw new Error('Impossible de récupérer les données');
+    const data = await r.json();
+    render(data);
+  } catch(err){
+    console.error(err);
+    document.getElementById('count').textContent = '—';
+    document.getElementById('fill').style.width = '0%';
+    document.getElementById('thresholds').innerHTML = '<div class="muted small">Erreur de chargement. Vérifie le chemin vers counter.json</div>';
+  }
+}
+
+function render(data){
+  const count = Number(data.count || 0);
+  const thresholds = Array.isArray(data.thresholds) ? data.thresholds : [];
+  document.getElementById('count').textContent = count.toLocaleString();
+  const max = Math.max(count, thresholds.length ? Math.max(...thresholds.map(t=>t.value||0)) : count || 100);
+  const pct = Math.min(100, Math.round((count / (max || 1)) * 100));
+  const fill = document.getElementById('fill');
+  fill.style.width = pct + '%';
+  fill.textContent = pct + '%';
+
+  const thContainer = document.getElementById('thresholds');
+  thContainer.innerHTML = '';
+  let next = null;
+  thresholds.sort((a,b)=>a.value-b.value).forEach(t=>{
+    const unlocked = count >= t.value;
+    const el = document.createElement('div');
+    el.className = 'th ' + (unlocked ? 'unlocked' : 'locked');
+    el.innerHTML = `<strong>${t.value.toLocaleString()}</strong><span style="opacity:0.85">${t.label || ''}</span>`;
+    thContainer.appendChild(el);
+    if(!unlocked && next===null) next = t;
+  });
+
+  document.getElementById('nextThreshold').textContent = next ? `Prochain palier : ${next.value.toLocaleString()} — ${next.label || ''}` : 'Tous les paliers débloqués 🎉';
+  document.getElementById('updated').textContent = new Date().toLocaleString();
+}
+
+// buttons
+document.getElementById('refresh').addEventListener('click', loadData);
+document.getElementById('copy').addEventListener('click', ()=>{
+  navigator.clipboard?.writeText(location.href).then(()=>alert('Lien copié !'));
+});
+
+// initial load + auto refresh
+loadData();
+setInterval(loadData, AUTO_REFRESH_SECONDS * 1000);
+</script>
+</body>
+</html>
