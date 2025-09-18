@@ -14,7 +14,8 @@
   .bar{height:18px;background:rgba(255,255,255,0.06);border-radius:10px;overflow:hidden;margin:18px 0}
   .fill{height:100%;width:0;background:linear-gradient(90deg,var(--accent),#60a5fa);display:flex;align-items:center;justify-content:center;color:#022;white-space:nowrap;font-weight:700;transition:width 800ms cubic-bezier(.2,.9,.2,1)}
   .thresholds{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
-  .th{padding:8px 10px;border-radius:8px;background:rgba(255,255,255,0.02);font-size:13px;display:flex;gap:8px;align-items:center}
+  .th{padding:8px 10px;border-radius:8px;background:rgba(255,255,255,0.02);font-size:13px;display:flex;gap:8px;align-items:center;flex:1 1 calc(50% - 10px);min-width:220px}
+  .th strong{font-weight:700}
   .th.locked{opacity:0.5}
   .th.unlocked{background:linear-gradient(90deg,#073b3f,#0b6b6b);box-shadow:0 6px 18px rgba(3,98,88,0.18)}
   .footer{display:flex;justify-content:space-between;align-items:center;margin-top:18px;gap:10px;flex-wrap:wrap}
@@ -25,7 +26,7 @@
 <body>
 <main class="card" role="main" aria-live="polite">
   <h1>Compteur de ventes — Tombola</h1>
-  <div class="muted small">Partage ce lien pour que tout le monde voie l'avancement et les paliers débloqués.</div>
+  <div class="muted small">Partage ce lien pour suivre l’avancement et les paliers débloqués 🎁</div>
 
   <div style="display:flex;align-items:center;gap:18px;margin-top:14px">
     <div>
@@ -50,12 +51,8 @@
 </main>
 
 <script>
-/*
- Config: change COUNTER_JSON_URL to where counter.json is hosted.
- Example: "https://raw.githubusercontent.com/tonRepo/compteur/main/counter.json"
-*/
-const COUNTER_JSON_URL = './counter.json'; // <-- change si besoin
-const AUTO_REFRESH_SECONDS = 30; // auto refresh viewers (30s)
+const COUNTER_JSON_URL = './counter.json'; 
+const AUTO_REFRESH_SECONDS = 30;
 
 async function loadData(){
   try{
@@ -67,7 +64,7 @@ async function loadData(){
     console.error(err);
     document.getElementById('count').textContent = '—';
     document.getElementById('fill').style.width = '0%';
-    document.getElementById('thresholds').innerHTML = '<div class="muted small">Erreur de chargement. Vérifie le chemin vers counter.json</div>';
+    document.getElementById('thresholds').innerHTML = '<div class="muted small">Erreur de chargement du compteur</div>';
   }
 }
 
@@ -88,22 +85,20 @@ function render(data){
     const unlocked = count >= t.value;
     const el = document.createElement('div');
     el.className = 'th ' + (unlocked ? 'unlocked' : 'locked');
-    el.innerHTML = `<strong>${t.value.toLocaleString()}</strong><span style="opacity:0.85">${t.label || ''}</span>`;
+    el.innerHTML = `<strong>${t.value}</strong> — <span style="opacity:0.85">${t.label || ''}</span>`;
     thContainer.appendChild(el);
     if(!unlocked && next===null) next = t;
   });
 
-  document.getElementById('nextThreshold').textContent = next ? `Prochain palier : ${next.value.toLocaleString()} — ${next.label || ''}` : 'Tous les paliers débloqués 🎉';
+  document.getElementById('nextThreshold').textContent = next ? `Prochain palier : ${next.value} — ${next.label || ''}` : 'Tous les paliers débloqués 🎉';
   document.getElementById('updated').textContent = new Date().toLocaleString();
 }
 
-// buttons
 document.getElementById('refresh').addEventListener('click', loadData);
 document.getElementById('copy').addEventListener('click', ()=>{
   navigator.clipboard?.writeText(location.href).then(()=>alert('Lien copié !'));
 });
 
-// initial load + auto refresh
 loadData();
 setInterval(loadData, AUTO_REFRESH_SECONDS * 1000);
 </script>
