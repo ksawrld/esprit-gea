@@ -1,0 +1,265 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>GEA • Carte privée - Collecte adresses</title>
+  <link rel="preconnect" href="https://unpkg.com" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
+  <style>
+    :root{--bg:#0b0c10;--panel:#111318;--muted:#98a2b3;--text:#e5e7eb;--accent:#8b5cf6}
+    *{box-sizing:border-box}
+    body{margin:0;font-family:Inter,ui-sans-serif,system-ui,Segoe UI,Roboto,Arial;background:var(--bg);color:var(--text)}
+    header{padding:12px 16px;display:flex;align-items:center;gap:12px;border-bottom:1px solid #111}
+    .layout{display:grid;grid-template-columns:360px 1fr;height:calc(100vh - 56px)}
+    aside{padding:14px;background:var(--panel);border-right:1px solid #121421;overflow:auto}
+    #map{width:100%;height:calc(100vh - 56px)}
+    input,textarea,select,button{font-size:14px}
+    input,textarea,select{width:100%;padding:8px;border-radius:8px;border:1px solid #222;background:#0d0f14;color:var(--text)}
+    .btn{padding:8px 10px;border-radius:8px;border:1px solid #222;background:#151722;color:var(--text);cursor:pointer}
+    .btn.primary{background:var(--accent);border-color:#6d28d9;color:#fff}
+    .muted{color:var(--muted);font-size:13px}
+    .card{background:#0d0f14;border:1px solid #151824;padding:12px;border-radius:12px}
+    .stack{display:flex;flex-direction:column;gap:10px}
+    .hidden{display:none}
+  </style>
+</head>
+<body>
+  <header>
+    <h1 style="font-size:16px;margin:0">GEA • Collecte d'adresses (privée)</h1>
+    <div style="margin-left:auto;display:flex;gap:8px;align-items:center">
+      <div class="muted">Mode : submissions publiques / accès admin sécurisé</div>
+    </div>
+  </header>
+
+  <div class="layout">
+    <aside>
+      <div class="stack">
+        <div class="card">
+          <h2 style="margin:0 0 8px 0">Soumettre une ville / adresse</h2>
+          <label class="muted">Ville, adresse ou poser un point sur la carte</label>
+          <input id="inputLocation" placeholder="Ex: 10 rue Exemple, Meaux" />
+          <div style="display:flex;gap:8px;margin-top:8px">
+            <button class="btn" id="geocodeBtn">Géocoder & ajouter</button>
+            <button class="btn" id="placeOnMapBtn">Placer un point</button>
+          </div>
+          <p class="muted">Les données soumises sont envoyées en base privée (Firestore). Seul l'admin peut les lire après authentification.</p>
+        </div>
+
+        <div class="card">
+          <h2 style="margin:0 0 8px 0">Options</h2>
+          <label class="muted">Choix de salle (visible uniquement pour l'admin)</label>
+          <select id="visibleVenue">
+            <option>Mareuil-lès-Meaux</option>
+            <option>Champs-sur-Marne</option>
+          </select>
+          <div style="display:flex;gap:8px;margin-top:8px">
+            <button class="btn" id="submitAnon">Soumettre</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <h2 style="margin:0 0 8px 0">Accès admin</h2>
+          <div id="authBlock">
+            <p class="muted">Seul toi (l'admin) doit pouvoir consulter les emplacements. Connecte-toi avec l'email admin créé sur Firebase Auth.</p>
+            <input id="adminEmail" placeholder="email admin" />
+            <input id="adminPass" placeholder="mot de passe" type="password" />
+            <div style="display:flex;gap:8px;margin-top:8px">
+              <button class="btn primary" id="adminSignIn">Se connecter</button>
+              <button class="btn" id="adminSignOut">Se déconnecter</button>
+            </div>
+            <p class="muted">Après connexion, tu verras un panneau Admin avec tous les points, distances et export CSV.</p>
+          </div>
+        </div>
+
+        <div class="card hidden" id="adminPanelShort">
+          <h2 style="margin:0 0 8px 0">Panneau Admin</h2>
+          <div class="muted">Tu es connecté. Clique pour ouvrir le panneau complet.</div>
+          <div style="display:flex;gap:8px;margin-top:8px">
+            <button class="btn" id="openAdminFull">Ouvrir le tableau admin</button>
+            <button class="btn" id="exportCsvAdmin">Exporter CSV</button>
+          </div>
+        </div>
+
+      </div>
+    </aside>
+
+    <main>
+      <div id="map"></div>
+    </main>
+  </div>
+
+  <!-- Bibliothèques -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+  <!-- Firebase v9 compat (modular) -->
+  <script type="module">
+    // IMPORTANT : tu dois créer un projet Firebase et activer Firestore + Authentication (Email/Password).
+    // Ensuite récupère la config Firebase (apiKey, authDomain, projectId, etc.) et colle-la ci-dessous.
+
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js';
+    import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js';
+    import { getFirestore, collection, addDoc, getDocs, query, orderBy } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js';
+
+    // =========== CONFIGURE ICI (remplace par ta config Firebase) ===========
+    const firebaseConfig = {
+  apiKey: "AIzaSyBRlEU_av-QMbB6GBCOJXSZqEps0MxOWeQ",
+  authDomain: "soireeespritgea.firebaseapp.com",
+  projectId: "soireeespritgea",
+  storageBucket: "soireeespritgea.firebasestorage.app",
+  messagingSenderId: "155827688313",
+  appId: "1:155827688313:web:132270277d7b12128895a8",
+  measurementId: "G-7SZK8KMG3Q"
+};
+    // ======================================================================
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    // --- Map setup ---
+    const map = L.map('map').setView([48.956, 2.888], 10);
+    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(map);
+
+    const venueLatLngs = {
+      'Mareuil-lès-Meaux': { lat: 48.956, lng: 2.888 },
+      'Champs-sur-Marne': { lat: 48.856, lng: 2.556 }
+    };
+
+    const markersLayer = L.layerGroup().addTo(map);
+
+    // --- Utils ---
+    const haversine = (a,b)=>{const R=6371;const dLat=(b.lat-a.lat)*Math.PI/180;const dLng=(b.lng-a.lng)*Math.PI/180;const sa=Math.sin(dLat/2)**2+Math.cos(a.lat*Math.PI/180)*Math.cos(b.lat*Math.PI/180)*Math.sin(dLng/2)**2;return 2*R*Math.asin(Math.sqrt(sa));};
+
+    // --- Submission flow ---
+    let tempPoint = null; // quand user choisit placer point
+
+    document.getElementById('placeOnMapBtn').addEventListener('click', ()=>{
+      alert('Clique sur la carte pour placer ton point.');
+      map.once('click', e=>{
+        tempPoint = e.latlng;
+        L.marker(tempPoint).addTo(map).bindPopup('Point temporaire (clique Soumettre pour envoyer)').openPopup();
+      });
+    });
+
+    // Géocodage simple via Nominatim
+    async function geocode(query){
+      const url = new URL('https://nominatim.openstreetmap.org/search');
+      url.searchParams.set('q', query);
+      url.searchParams.set('format','jsonv2');
+      url.searchParams.set('limit','1');
+      url.searchParams.set('countrycodes','fr');
+      const r = await fetch(url); if(!r.ok) throw new Error('Erreur géocodage');
+      const j = await r.json(); if(!j.length) throw new Error('Aucun résultat');
+      return { lat:+j[0].lat, lng:+j[0].lon, display:j[0].display_name };
+    }
+
+    document.getElementById('geocodeBtn').addEventListener('click', async ()=>{
+      const q = document.getElementById('inputLocation').value.trim(); if(!q) return alert('Tape une adresse/ville');
+      try{ const r = await geocode(q); tempPoint = { lat:r.lat, lng:r.lng, display:r.display }; L.marker([r.lat,r.lng]).addTo(map).bindPopup('Point temporaire').openPopup(); }catch(e){alert(e.message)}
+    });
+
+    // Submit anonymement (enregistre en Firestore, lecture limitée via règles)
+    document.getElementById('submitAnon').addEventListener('click', async ()=>{
+      if(!tempPoint) return alert("Place d'abord un point ou géocode une adresse.");
+      const venue = document.getElementById('visibleVenue').value;
+      try{
+        await addDoc(collection(db,'submissions'),{
+          createdAt: new Date().toISOString(),
+          lat: tempPoint.lat,
+          lng: tempPoint.lng,
+          display: tempPoint.display||null,
+          venueChoice: venue
+        });
+        alert('Soumis. Merci !');
+        tempPoint = null;
+      }catch(e){ console.error(e); alert('Erreur envoi: '+e.message); }
+    });
+
+    // --- Auth (admin) ---
+    document.getElementById('adminSignIn').addEventListener('click', async ()=>{
+      const email = document.getElementById('adminEmail').value.trim();
+      const pass = document.getElementById('adminPass').value;
+      try{ await signInWithEmailAndPassword(auth,email,pass); }catch(e){ alert('Erreur login: '+e.message); }
+    });
+    document.getElementById('adminSignOut').addEventListener('click', async ()=>{ try{ await signOut(auth); }catch(e){console.warn(e)} });
+
+    onAuthStateChanged(auth, async user=>{
+      if(user){
+        // Utilisateur connecté – afficher panneau admin
+        document.getElementById('adminPanelShort').classList.remove('hidden');
+        document.getElementById('authBlock').classList.add('hidden');
+      }else{
+        document.getElementById('adminPanelShort').classList.add('hidden');
+        document.getElementById('authBlock').classList.remove('hidden');
+      }
+    });
+
+    // Ouvrir tableau admin (récupère les données privées depuis Firestore)
+    document.getElementById('openAdminFull').addEventListener('click', async ()=>{
+      // récupère les docs
+      const q = query(collection(db,'submissions'), orderBy('createdAt','asc'));
+      const snap = await getDocs(q);
+      const rows = [];
+      markersLayer.clearLayers();
+      snap.forEach(doc=>{
+        const d = doc.data();
+        rows.push(d);
+        const p = L.marker([d.lat,d.lng]).addTo(markersLayer);
+        const v = venueLatLngs[d.venueChoice] || null;
+        let extra = '';
+        if(v){ const dist = haversine({lat:d.lat,lng:d.lng}, v).toFixed(1); extra = `<br>Distance → ${dist} km depuis ${d.venueChoice}` }
+        p.bindPopup(`<b>Soumis</b><br>${d.display||''}${extra}`);
+      });
+      // Afficher un tableau basique dans une nouvelle fenêtre
+      const win = window.open('','_blank');
+      win.document.write('<h2>Tableau Admin — Submissions</h2>');
+      win.document.write('<p>Total: '+rows.length+'</p>');
+      win.document.write('<table border=1 cellpadding=6><tr><th>#</th><th>date</th><th>display</th><th>lat</th><th>lng</th><th>venue</th></tr>');
+      rows.forEach((r,i)=>{ win.document.write(`<tr><td>${i+1}</td><td>${r.createdAt}</td><td>${r.display||''}</td><td>${r.lat}</td><td>${r.lng}</td><td>${r.venueChoice||''}</td></tr>`); });
+      win.document.write('</table>');
+    });
+
+    document.getElementById('exportCsvAdmin').addEventListener('click', async ()=>{
+      const q = query(collection(db,'submissions'), orderBy('createdAt','asc'));
+      const snap = await getDocs(q);
+      const rows = [['createdAt','display','lat','lng','venue']];
+      snap.forEach(doc=>{ const d = doc.data(); rows.push([d.createdAt||'', d.display||'', d.lat, d.lng, d.venueChoice||'']); });
+      const csv = rows.map(r=> r.map(v=> '"'+String(v).replaceAll('"','""')+'"').join(',')).join('
+');
+      const blob = new Blob([csv], { type:'text/csv;charset=utf-8' }); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'submissions_gea.csv'; a.click();
+    });
+
+    // FIN du module
+
+    // ---------- NOTES IMPORTANTES (à lire) ----------
+    // 1) Sécurité : le front-end ne suffit PAS pour restreindre l'accès aux données. C'est pourquoi
+    //    on utilise Firestore + rules (ci-dessous) pour empêcher la lecture par des utilisateurs non-admin.
+    // 2) Configuration Firestore rules (exemple) :
+    /*
+    rules_version = '2';
+    service cloud.firestore {
+      match /databases/{database}/documents {
+        match /submissions/{docId} {
+          allow create: if true; // tout le monde peut créer
+          allow read, list, delete: if request.auth != null && request.auth.uid == '<ADMIN_UID>';
+        }
+      }
+    }
+    */
+    // Remplace <ADMIN_UID> par l'UID de ton compte admin (disponible dans console Firebase > Authentication > Users).
+
+    // 3) Déployer :
+    // - Crée le projet Firebase, active Authentication (e-mail/mot de passe) et Firestore.
+    // - Ajoute un utilisateur admin via la console (email+mdp). Récupère son UID.
+    // - Colle la config firebaseConfig ci-dessus dans ce fichier.
+    // - Modifie les Firestore rules avec l'UID admin.
+    // - Héberge le fichier sur GitHub Pages — l'app frontend demandera au visiteur de s'authentifier
+    //   pour voir les données (seul l'admin pourra le faire).
+
+    // 4) Alternative rapide et moins sûre : si tu ne veux pas configurer Firebase,
+    //    je peux t'ajouter un simple "code admin" côté client (mais attention: n'importe qui techniquement
+    //    peut lire le JS et décoder ce code. Ne l'utilise pas pour protéger des données sensibles).
+
+  </script>
+</body>
+</html>
