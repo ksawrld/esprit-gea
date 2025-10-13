@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Esprit GEA • Collecte d'adresses</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
+  <style>
+    :root {
+      --bg: #0a0f28;
+      --panel: #111a3b;
+      --accent: #1e3a8a;
+      --text: #ffffff;
+      --muted: #c7d2fe;
+      --border: #2c3e50;
+    }
+    *{box-sizing:border-box}
+    body{margin:0;font-family:'Poppins',sans-serif;background:var(--bg);color:var(--text)}
+    header{padding:14px 16px;display:flex;align-items:center;gap:12px;border-bottom:1px solid var(--border);background:var(--panel)}
+    header img{height:48px;border-radius:50%}
+    header h1{font-size:18px;margin:0;color:#fff;font-weight:600}
+    .layout{display:grid;grid-template-columns:360px 1fr;height:calc(100vh - 70px)}
+    aside{padding:16px;background:var(--panel);border-right:1px solid var(--border);overflow:auto}
+    #map{width:100%;height:calc(100vh - 70px)}
+    input,select,button{font-size:14px;border:none;outline:none}
+    input,select{width:100%;padding:8px 10px;margin-top:4px;border-radius:8px;background:#1e2761;color:#fff}
+    .btn{padding:8px 10px;border-radius:8px;background:#24388d;color:#fff;cursor:pointer;font-weight:500;transition:0.3s}
+    .btn:hover{background:#1e3a8a}
+    .btn.primary{background:#3b82f6}
+    .btn.primary:hover{background:#2563eb}
+    .card{background:#162155;border:1px solid #24388d;padding:14px;border-radius:12px}
+    .stack{display:flex;flex-direction:column;gap:12px}
+    .muted{color:var(--muted);font-size:13px}
+    .hidden{display:none}
+  </style>
+</head>
+<body>
+  <header>
+    <img src="IMG_5695_cugan_noise3_4x_i1.00 (1).jpeg" alt="logo esprit gea">
+    <h1>ESPRIT GEA • Collecte d'adresses</h1>
+  </header>
+
+  <div class="layout">
+    <aside>
+      <div class="stack">
+        <div class="card">
+          <h2>Soumettre une ville / adresse</h2>
+          <label class="muted">Ville, adresse ou poser un point sur la carte</label>
+          <input id="inputLocation" placeholder="Ex: 10 rue Exemple, Meaux" />
+          <div style="display:flex;gap:8px;margin-top:8px">
+            <button class="btn" id="geocodeBtn">Géocoder & ajouter</button>
+            <button class="btn" id="placeOnMapBtn">Placer un point</button>
+          </div>
+          <p class="muted">Les données soumises sont envoyées en base privée (Firestore). Seul l'admin peut les lire après authentification.</p>
+        </div>
+
+        <div class="card">
+          <h2>Options</h2>
+          <label class="muted">Choix de salle (visible uniquement pour l'admin)</label>
+          <select id="visibleVenue">
+            <option>Mareuil-lès-Meaux</option>
+            <option>Champs-sur-Marne</option>
+          </select>
+          <div style="display:flex;gap:8px;margin-top:8px">
+            <button class="btn primary" id="submitAnon">Soumettre</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <h2>Accès admin</h2>
+          <div id="authBlock">
+            <p class="muted">Connecte-toi avec ton email admin pour voir les points enregistrés.</p>
+            <input id="adminEmail" placeholder="email admin" />
+            <input id="adminPass" placeholder="mot de passe" type="password" />
+            <div style="display:flex;gap:8px;margin-top:8px">
+              <button class="btn primary" id="adminSignIn">Se connecter</button>
+              <button class="btn" id="adminSignOut">Se déconnecter</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="card hidden" id="adminPanelShort">
+          <h2>Panneau Admin</h2>
+          <div class="muted">Tu es connecté. Accède au tableau des soumissions.</div>
+          <div style="display:flex;gap:8px;margin-top:8px">
+            <button class="btn" id="openAdminFull">Ouvrir le tableau</button>
+            <button class="btn" id="exportCsvAdmin">Exporter CSV</button>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <main>
+      <div id="map"></div>
+    </main>
+  </div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+  <script type="module" src="https://soireegea.web.app/script.js"></script>
+</body>
+</html>
