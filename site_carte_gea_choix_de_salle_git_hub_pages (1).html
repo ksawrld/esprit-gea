@@ -93,110 +93,125 @@
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
   <!-- Firebase v9 compat (modular) -->
   <script type="module">
-    // IMPORTANT : tu dois créer un projet Firebase et activer Firestore + Authentication (Email/Password).
-    // Ensuite récupère la config Firebase (apiKey, authDomain, projectId, etc.) et colle-la ci-dessous.
+  import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js';
+  import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js';
+  import { getFirestore, collection, addDoc, getDocs, query, orderBy } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js';
 
-    import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js';
-    import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js';
-    import { getFirestore, collection, addDoc, getDocs, query, orderBy } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js';
+  // === ta config (déjà présente dans ton fichier) ===
+  const firebaseConfig = {
+    apiKey: "AIzaSyBRlEU_av-QMbB6GBCOJXSZqEps0MxOWeQ",
+    authDomain: "soireeespritgea.firebaseapp.com",
+    projectId: "soireeespritgea",
+    storageBucket: "soireeespritgea.firebasestorage.app",
+    messagingSenderId: "155827688313",
+    appId: "1:155827688313:web:132270277d7b12128895a8",
+    measurementId: "G-7SZK8KMG3Q"
+  };
+  // ================================================
 
-    // =========== CONFIGURE ICI (remplace par ta config Firebase) ===========
-    const firebaseConfig = {
-  apiKey: "AIzaSyBRlEU_av-QMbB6GBCOJXSZqEps0MxOWeQ",
-  authDomain: "soireeespritgea.firebaseapp.com",
-  projectId: "soireeespritgea",
-  storageBucket: "soireeespritgea.firebasestorage.app",
-  messagingSenderId: "155827688313",
-  appId: "1:155827688313:web:132270277d7b12128895a8",
-  measurementId: "G-7SZK8KMG3Q"
-};
-    // ======================================================================
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db = getFirestore(app);
 
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const db = getFirestore(app);
+  // --- Map setup ---
+  const map = L.map('map').setView([48.956, 2.888], 10);
+  L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(map);
 
-    // --- Map setup ---
-    const map = L.map('map').setView([48.956, 2.888], 10);
-    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(map);
+  // force le redraw de la carte après 300ms (résout le "carte vide")
+  setTimeout(()=>{ try{ map.invalidateSize(); }catch(e){console.warn('invalidateSize failed', e);} }, 300);
 
-    const venueLatLngs = {
-      'Mareuil-lès-Meaux': { lat: 48.956, lng: 2.888 },
-      'Champs-sur-Marne': { lat: 48.856, lng: 2.556 }
-    };
+  const venueLatLngs = {
+    'Mareuil-lès-Meaux': { lat: 48.956, lng: 2.888 },
+    'Champs-sur-Marne': { lat: 48.856, lng: 2.556 }
+  };
 
-    const markersLayer = L.layerGroup().addTo(map);
+  const markersLayer = L.layerGroup().addTo(map);
 
-    // --- Utils ---
-    const haversine = (a,b)=>{const R=6371;const dLat=(b.lat-a.lat)*Math.PI/180;const dLng=(b.lng-a.lng)*Math.PI/180;const sa=Math.sin(dLat/2)**2+Math.cos(a.lat*Math.PI/180)*Math.cos(b.lat*Math.PI/180)*Math.sin(dLng/2)**2;return 2*R*Math.asin(Math.sqrt(sa));};
+  const haversine = (a,b)=>{const R=6371;const dLat=(b.lat-a.lat)*Math.PI/180;const dLng=(b.lng-a.lng)*Math.PI/180;const sa=Math.sin(dLat/2)**2+Math.cos(a.lat*Math.PI/180)*Math.cos(b.lat*Math.PI/180)*Math.sin(dLng/2)**2;return 2*R*Math.asin(Math.sqrt(sa));};
 
-    // --- Submission flow ---
-    let tempPoint = null; // quand user choisit placer point
+  let tempPoint = null;
 
-    document.getElementById('placeOnMapBtn').addEventListener('click', ()=>{
-      alert('Clique sur la carte pour placer ton point.');
-      map.once('click', e=>{
-        tempPoint = e.latlng;
-        L.marker(tempPoint).addTo(map).bindPopup('Point temporaire (clique Soumettre pour envoyer)').openPopup();
+  document.getElementById('placeOnMapBtn').addEventListener('click', ()=>{
+    alert('Clique sur la carte pour placer ton point.');
+    map.once('click', e=>{
+      tempPoint = e.latlng;
+      L.marker(tempPoint).addTo(map).bindPopup('Point temporaire (clique Soumettre pour envoyer)').openPopup();
+    });
+  });
+
+  async function geocode(query){
+    const url = new URL('https://nominatim.openstreetmap.org/search');
+    url.searchParams.set('q', query);
+    url.searchParams.set('format','jsonv2');
+    url.searchParams.set('limit','1');
+    url.searchParams.set('countrycodes','fr');
+    const r = await fetch(url);
+    if(!r.ok) throw new Error('Erreur géocodage: ' + r.status);
+    const j = await r.json();
+    if(!j.length) throw new Error('Aucun résultat');
+    return { lat:+j[0].lat, lng:+j[0].lon, display:j[0].display_name };
+  }
+
+  document.getElementById('geocodeBtn').addEventListener('click', async ()=>{
+    const q = document.getElementById('inputLocation').value.trim(); if(!q) return alert('Tape une adresse/ville');
+    try{
+      const r = await geocode(q);
+      tempPoint = { lat:r.lat, lng:r.lng, display:r.display };
+      L.marker([r.lat,r.lng]).addTo(map).bindPopup('Point temporaire').openPopup();
+      map.panTo([r.lat,r.lng]);
+      setTimeout(()=>map.invalidateSize(),200);
+    }catch(e){ console.error(e); alert('Géocodage: '+e.message); }
+  });
+
+  document.getElementById('submitAnon').addEventListener('click', async ()=>{
+    if(!tempPoint) return alert("Place d'abord un point ou géocode une adresse.");
+    const venue = document.getElementById('visibleVenue').value;
+    try{
+      await addDoc(collection(db,'submissions'),{
+        createdAt: new Date().toISOString(),
+        lat: tempPoint.lat,
+        lng: tempPoint.lng,
+        display: tempPoint.display||null,
+        venueChoice: venue
       });
-    });
+      alert('Soumis. Merci !');
+      tempPoint = null;
+    }catch(e){ console.error('Firestore write error', e); alert('Erreur envoi: '+e.message); }
+  });
 
-    // Géocodage simple via Nominatim
-    async function geocode(query){
-      const url = new URL('https://nominatim.openstreetmap.org/search');
-      url.searchParams.set('q', query);
-      url.searchParams.set('format','jsonv2');
-      url.searchParams.set('limit','1');
-      url.searchParams.set('countrycodes','fr');
-      const r = await fetch(url); if(!r.ok) throw new Error('Erreur géocodage');
-      const j = await r.json(); if(!j.length) throw new Error('Aucun résultat');
-      return { lat:+j[0].lat, lng:+j[0].lon, display:j[0].display_name };
+  // --- Auth (admin) ---
+  document.getElementById('adminSignIn').addEventListener('click', async ()=>{
+    const email = document.getElementById('adminEmail').value.trim();
+    const pass = document.getElementById('adminPass').value;
+    if(!email || !pass) return alert('Email + mot de passe requis');
+    try{
+      const cred = await signInWithEmailAndPassword(auth,email,pass);
+      console.log('connecté', cred.user.uid);
+      alert('Connecté en tant que ' + email);
+      // redraw map after auth (just in case)
+      setTimeout(()=>map.invalidateSize(), 300);
+    }catch(e){
+      console.error('login error', e);
+      alert('Erreur login: '+ e.message + '\\n(Ouvre la console dev pour plus de détails)');
     }
+  });
+  document.getElementById('adminSignOut').addEventListener('click', async ()=>{ try{ await signOut(auth); alert('Déconnecté'); }catch(e){console.warn(e)} });
 
-    document.getElementById('geocodeBtn').addEventListener('click', async ()=>{
-      const q = document.getElementById('inputLocation').value.trim(); if(!q) return alert('Tape une adresse/ville');
-      try{ const r = await geocode(q); tempPoint = { lat:r.lat, lng:r.lng, display:r.display }; L.marker([r.lat,r.lng]).addTo(map).bindPopup('Point temporaire').openPopup(); }catch(e){alert(e.message)}
-    });
+  onAuthStateChanged(auth, async user=>{
+    if(user){
+      document.getElementById('adminPanelShort').classList.remove('hidden');
+      document.getElementById('authBlock').classList.add('hidden');
+      console.log('Auth state: connected', user.uid);
+    }else{
+      document.getElementById('adminPanelShort').classList.add('hidden');
+      document.getElementById('authBlock').classList.remove('hidden');
+      console.log('Auth state: disconnected');
+    }
+    setTimeout(()=>map.invalidateSize(),200);
+  });
 
-    // Submit anonymement (enregistre en Firestore, lecture limitée via règles)
-    document.getElementById('submitAnon').addEventListener('click', async ()=>{
-      if(!tempPoint) return alert("Place d'abord un point ou géocode une adresse.");
-      const venue = document.getElementById('visibleVenue').value;
-      try{
-        await addDoc(collection(db,'submissions'),{
-          createdAt: new Date().toISOString(),
-          lat: tempPoint.lat,
-          lng: tempPoint.lng,
-          display: tempPoint.display||null,
-          venueChoice: venue
-        });
-        alert('Soumis. Merci !');
-        tempPoint = null;
-      }catch(e){ console.error(e); alert('Erreur envoi: '+e.message); }
-    });
-
-    // --- Auth (admin) ---
-    document.getElementById('adminSignIn').addEventListener('click', async ()=>{
-      const email = document.getElementById('adminEmail').value.trim();
-      const pass = document.getElementById('adminPass').value;
-      try{ await signInWithEmailAndPassword(auth,email,pass); }catch(e){ alert('Erreur login: '+e.message); }
-    });
-    document.getElementById('adminSignOut').addEventListener('click', async ()=>{ try{ await signOut(auth); }catch(e){console.warn(e)} });
-
-    onAuthStateChanged(auth, async user=>{
-      if(user){
-        // Utilisateur connecté – afficher panneau admin
-        document.getElementById('adminPanelShort').classList.remove('hidden');
-        document.getElementById('authBlock').classList.add('hidden');
-      }else{
-        document.getElementById('adminPanelShort').classList.add('hidden');
-        document.getElementById('authBlock').classList.remove('hidden');
-      }
-    });
-
-    // Ouvrir tableau admin (récupère les données privées depuis Firestore)
-    document.getElementById('openAdminFull').addEventListener('click', async ()=>{
-      // récupère les docs
+  document.getElementById('openAdminFull').addEventListener('click', async ()=>{
+    try{
       const q = query(collection(db,'submissions'), orderBy('createdAt','asc'));
       const snap = await getDocs(q);
       const rows = [];
@@ -210,24 +225,32 @@
         if(v){ const dist = haversine({lat:d.lat,lng:d.lng}, v).toFixed(1); extra = `<br>Distance → ${dist} km depuis ${d.venueChoice}` }
         p.bindPopup(`<b>Soumis</b><br>${d.display||''}${extra}`);
       });
-      // Afficher un tableau basique dans une nouvelle fenêtre
       const win = window.open('','_blank');
       win.document.write('<h2>Tableau Admin — Submissions</h2>');
       win.document.write('<p>Total: '+rows.length+'</p>');
       win.document.write('<table border=1 cellpadding=6><tr><th>#</th><th>date</th><th>display</th><th>lat</th><th>lng</th><th>venue</th></tr>');
       rows.forEach((r,i)=>{ win.document.write(`<tr><td>${i+1}</td><td>${r.createdAt}</td><td>${r.display||''}</td><td>${r.lat}</td><td>${r.lng}</td><td>${r.venueChoice||''}</td></tr>`); });
       win.document.write('</table>');
-    });
+    }catch(e){
+      console.error('Erreur lecture submissions', e);
+      alert('Impossible de récupérer les soumissions : '+ e.message + '\\nVérifie tes règles Firestore et que ton compte admin a bien l\'UID inscrit dans les règles.');
+    }
+  });
 
-    document.getElementById('exportCsvAdmin').addEventListener('click', async ()=>{
+  document.getElementById('exportCsvAdmin').addEventListener('click', async ()=>{
+    try{
       const q = query(collection(db,'submissions'), orderBy('createdAt','asc'));
       const snap = await getDocs(q);
       const rows = [['createdAt','display','lat','lng','venue']];
       snap.forEach(doc=>{ const d = doc.data(); rows.push([d.createdAt||'', d.display||'', d.lat, d.lng, d.venueChoice||'']); });
-      const csv = rows.map(r=> r.map(v=> '"'+String(v).replaceAll('"','""')+'"').join(',')).join('
-');
+      const csv = rows.map(r=> r.map(v=> '"'+String(v).replaceAll('"','""')+'"').join(',')).join('\\n');
       const blob = new Blob([csv], { type:'text/csv;charset=utf-8' }); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'submissions_gea.csv'; a.click();
-    });
+    }catch(e){ console.error('export error', e); alert('Erreur export: '+ e.message); }
+  });
+
+  // petit helper: si la carte est vide, appuie sur F5 pour forcer reload et regarde la console (F12)
+</script>
+
 
     // FIN du module
 
