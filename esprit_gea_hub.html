@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Esprit GEA - Hub Projets</title>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bleu: #0e2d81;
+      --noir: #000000;
+      --blanc: #ffffff;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Montserrat', sans-serif;
+    }
+
+    body {
+      background-color: var(--blanc);
+      color: var(--noir);
+      line-height: 1.6;
+    }
+
+    header {
+      background-color: var(--bleu);
+      color: var(--blanc);
+      text-align: center;
+      padding: 2rem 1rem;
+    }
+
+    header img {
+      width: 120px;
+      height: auto;
+    }
+
+    header h1 {
+      margin-top: 1rem;
+      font-size: 2rem;
+    }
+
+    nav {
+      display: flex;
+      justify-content: center;
+      background-color: var(--noir);
+    }
+
+    nav a {
+      color: var(--blanc);
+      padding: 1rem;
+      text-decoration: none;
+    }
+
+    nav a:hover {
+      background-color: var(--bleu);
+    }
+
+    .container {
+      padding: 2rem;
+      max-width: 1000px;
+      margin: auto;
+    }
+
+    iframe {
+      width: 100%;
+      height: 600px;
+      border: none;
+    }
+
+    footer {
+      background-color: var(--bleu);
+      color: var(--blanc);
+      text-align: center;
+      padding: 1rem;
+      margin-top: 2rem;
+    }
+
+    .cta-button {
+      display: inline-block;
+      background-color: var(--bleu);
+      color: var(--blanc);
+      padding: 0.75rem 1.5rem;
+      text-decoration: none;
+      margin-top: 1rem;
+      border-radius: 5px;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <img src="logo.png" alt="Logo Esprit GEA">
+    <h1>Esprit GEA</h1>
+    <p>Centralisons nos actions, unissons notre communication</p>
+  </header>
+
+  <nav>
+    <a href="#accueil">Accueil</a>
+    <a href="#calendrier">Calendrier</a>
+    <a href="#apropos">À propos</a>
+  </nav>
+
+  <section class="container" id="accueil">
+    <h2>Bienvenue sur le hub des projets tutorés</h2>
+    <p>Ce site centralise toutes les communications liées aux actions des projets tutorés de l’IUT GEA. Consultez les créneaux, évitez les conflits, et restez synchronisés !</p>
+    <a class="cta-button" href="#calendrier">Voir le calendrier</a>
+  </section>
+
+  <section class="container" id="calendrier">
+    <h2>Calendrier des communications</h2>
+    <p>Consultez le calendrier pour voir les créneaux de publication et les actions prévues par les autres groupes.</p>
+    <!-- Remplace le lien ci-dessous par votre Google Agenda intégré (iframe embed) -->
+    <iframe src="https://calendar.google.com/calendar/embed?src=your_calendar_id&ctz=Europe%2FParis"></iframe>
+    <p style="margin-top: 1rem;">Soumettre une demande de publication : <a href="https://forms.gle/your_form_link" target="_blank">Formulaire de demande</a></p>
+  </section>
+
+  <section class="container" id="apropos">
+    <h2>À propos d’Esprit GEA</h2>
+    <p>Nous sommes chargés de la coordination de la communication interne entre les groupes projets GEA. Notre rôle est de garantir une information claire, organisée, et sans conflit.</p>
+    <ul>
+      <li>✅ Mise à jour du Google Agenda</li>
+      <li>✅ Réception et validation des demandes de publication</li>
+      <li>✅ Suivi des publications et respect des créneaux</li>
+    </ul>
+  </section>
+
+  <footer>
+    <p>&copy; 2025 Esprit GEA - IUT GEA. Tous droits réservés.</p>
+  </footer>
+</body>
+</html>
