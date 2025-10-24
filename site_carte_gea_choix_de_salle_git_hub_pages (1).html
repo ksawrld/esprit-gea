@@ -3,84 +3,102 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>GEA • Carte privée - Collecte adresses</title>
-  <link rel="preconnect" href="https://unpkg.com" />
+  <title>Esprit GEA • Ramassage - Collecte</title>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
   <style>
-    :root{--bg:#0b0c10;--panel:#111318;--muted:#98a2b3;--text:#e5e7eb;--accent:#8b5cf6}
-    *{box-sizing:border-box}
-    body{margin:0;font-family:Inter,ui-sans-serif,system-ui,Segoe UI,Roboto,Arial;background:var(--bg);color:var(--text)}
-    header{padding:12px 16px;display:flex;align-items:center;gap:12px;border-bottom:1px solid #111}
-    .layout{display:grid;grid-template-columns:360px 1fr;height:calc(100vh - 56px)}
-    aside{padding:14px;background:var(--panel);border-right:1px solid #121421;overflow:auto}
-    #map{width:100%;height:calc(100vh - 56px)}
-    input,textarea,select,button{font-size:14px}
-    input,textarea,select{width:100%;padding:8px;border-radius:8px;border:1px solid #222;background:#0d0f14;color:var(--text)}
-    .btn{padding:8px 10px;border-radius:8px;border:1px solid #222;background:#151722;color:var(--text);cursor:pointer}
-    .btn.primary{background:var(--accent);border-color:#6d28d9;color:#fff}
-    .muted{color:var(--muted);font-size:13px}
-    .card{background:#0d0f14;border:1px solid #151824;padding:12px;border-radius:12px}
-    .stack{display:flex;flex-direction:column;gap:10px}
-    .hidden{display:none}
+    :root {
+      --bg: #0b1437;
+      --panel: #111d49;
+      --accent: #1e3a8a;
+      --accent-2: #3b82f6;
+      --text: #ffffff;
+      --muted: #d0dcff;
+      --border: #233062;
+    }
+    * { box-sizing: border-box; }
+    html,body { height: 100%; margin: 0; font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, Arial; color: var(--text); background: var(--bg); }
+    header { padding: 12px 16px; display:flex; align-items:center; gap:12px; border-bottom:1px solid var(--border); background:var(--panel); }
+    header img { height:48px; width:48px; border-radius:50%; object-fit:cover; }
+    header h1 { font-size:18px; margin:0; font-weight:600; }
+    .layout { display:grid; grid-template-columns:380px 1fr; height: calc(100vh - 70px); }
+    @media (max-width: 980px) { .layout { grid-template-columns:1fr; grid-auto-rows:auto 1fr; height:auto; } #map { height:70vh; } }
+    aside { padding:16px; background:var(--panel); border-right:1px solid var(--border); overflow:auto; }
+    #map { width:100%; height:calc(100vh - 70px); background:#07102a; }
+    input, select, textarea, button { font-size:14px; border:none; outline:none; }
+    input, select, textarea { width:100%; padding:10px 12px; margin-top:6px; border-radius:10px; background:#12204f; color:#fff; }
+    textarea { min-height:80px; resize:vertical; }
+    .btn { padding:10px 12px; border-radius:10px; background:#24388d; color:#fff; cursor:pointer; border:1px solid #3148a6; }
+    .btn.primary { background:var(--accent-2); border-color:#2563eb; }
+    .card { background:#0f1a4a; border:1px solid var(--border); padding:14px; border-radius:12px; box-shadow:0 6px 16px rgba(0,0,0,.25); }
+    .stack { display:flex; flex-direction:column; gap:12px; }
+    .muted { color:var(--muted); font-size:13px; }
+    label.muted { color:var(--muted); font-size:13px; display:block; margin-top:8px; }
+    .hidden { display:none; }
+    .small { font-size:13px; color:var(--muted); }
   </style>
 </head>
 <body>
   <header>
-    <h1 style="font-size:16px;margin:0">GEA • Collecte d'adresses (privée)</h1>
-    <div style="margin-left:auto;display:flex;gap:8px;align-items:center">
-      <div class="muted">Mode : submissions publiques / accès admin sécurisé</div>
-    </div>
+    <img src="logo.png" alt="Esprit GEA logo" onerror="this.style.display='none'">
+    <h1>ESPRIT GEA • Ramassage - Collecte</h1>
   </header>
 
   <div class="layout">
     <aside>
       <div class="stack">
         <div class="card">
-          <h2 style="margin:0 0 8px 0">Soumettre une ville / adresse</h2>
-          <label class="muted">Ville, adresse ou poser un point sur la carte</label>
+          <h2>Soumettre pour ramassage</h2>
+          <label class="muted">Nom</label>
+          <input id="inputLastName" placeholder="Ex: Dupont" />
+          <label class="muted">Prénom</label>
+          <input id="inputFirstName" placeholder="Ex: Lucas" />
+          <label class="muted">Téléphone</label>
+          <input id="inputPhone" placeholder="Ex: +33 6 12 34 56 78" />
+          <label class="muted">Adresse (ou laisse vide et place un point sur la carte)</label>
           <input id="inputLocation" placeholder="Ex: 10 rue Exemple, Meaux" />
           <div style="display:flex;gap:8px;margin-top:8px">
             <button class="btn" id="geocodeBtn">Géocoder & ajouter</button>
             <button class="btn" id="placeOnMapBtn">Placer un point</button>
           </div>
-          <p class="muted">Les données soumises sont envoyées en base privée (Firestore). Seul l'admin peut les lire après authentification.</p>
-        </div>
-
-        <div class="card">
-          <h2 style="margin:0 0 8px 0">Options</h2>
-          <label class="muted">Choix de salle (visible uniquement pour l'admin)</label>
-          <select id="visibleVenue">
-            <option>Mareuil-lès-Meaux</option>
-            <option>Champs-sur-Marne</option>
+          <label class="muted" style="margin-top:8px">Point de dépose (facultatif)</label>
+          <select id="dropPoint">
+            <option value="">Choisir un point</option>
+            <option value="Gare de Meaux">Gare de Meaux</option>
+            <option value="Campus IUT Meaux">Campus IUT Meaux</option>
+            <option value="Centre de Mareuil">Centre de Mareuil</option>
+            <option value="Autre">Autre (indiqué en remarque)</option>
           </select>
-          <div style="display:flex;gap:8px;margin-top:8px">
-            <button class="btn" id="submitAnon">Soumettre</button>
+          <label class="muted" style="margin-top:8px">Message / remarque (optionnel)</label>
+          <textarea id="inputNote" placeholder="Ex: attendre à la gare, côté parking."></textarea>
+          <label style="margin-top:8px"><input type="checkbox" id="consentChk" /> <span class="small">J'accepte d'être contacté et récupéré par l'équipe Esprit GEA.</span></label>
+          <div style="display:flex;gap:8px;margin-top:10px">
+            <button class="btn primary" id="submitAnon">Soumettre ma demande</button>
+            <button class="btn" id="clearForm">Effacer</button>
           </div>
         </div>
 
         <div class="card">
-          <h2 style="margin:0 0 8px 0">Accès admin</h2>
+          <h2>Accès admin</h2>
           <div id="authBlock">
-            <p class="muted">Seul toi (l'admin) doit pouvoir consulter les emplacements. Connecte-toi avec l'email admin créé sur Firebase Auth.</p>
+            <label class="muted">Email admin</label>
             <input id="adminEmail" placeholder="email admin" />
+            <label class="muted">Mot de passe</label>
             <input id="adminPass" placeholder="mot de passe" type="password" />
             <div style="display:flex;gap:8px;margin-top:8px">
               <button class="btn primary" id="adminSignIn">Se connecter</button>
               <button class="btn" id="adminSignOut">Se déconnecter</button>
             </div>
-            <p class="muted">Après connexion, tu verras un panneau Admin avec tous les points, distances et export CSV.</p>
           </div>
         </div>
 
         <div class="card hidden" id="adminPanelShort">
-          <h2 style="margin:0 0 8px 0">Panneau Admin</h2>
-          <div class="muted">Tu es connecté. Clique pour ouvrir le panneau complet.</div>
+          <h2>Panneau Admin</h2>
+          <div class="muted">Tu es connecté. Accède au tableau des demandes.</div>
           <div style="display:flex;gap:8px;margin-top:8px">
-            <button class="btn" id="openAdminFull">Ouvrir le tableau admin</button>
+            <button class="btn" id="openAdminFull">Ouvrir le tableau</button>
             <button class="btn" id="exportCsvAdmin">Exporter CSV</button>
           </div>
         </div>
-
       </div>
     </aside>
 
@@ -89,200 +107,103 @@
     </main>
   </div>
 
-  <!-- Bibliothèques -->
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
-  <!-- Firebase v9 compat (modular) -->
   <script type="module">
-  import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js';
-  import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js';
-  import { getFirestore, collection, addDoc, getDocs, query, orderBy } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js';
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js';
+    import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js';
+    import { getFirestore, collection, addDoc, getDocs, query, orderBy } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js';
 
-  // === ta config (déjà présente dans ton fichier) ===
-  const firebaseConfig = {
-    apiKey: "AIzaSyBRlEU_av-QMbB6GBCOJXSZqEps0MxOWeQ",
-    authDomain: "soireeespritgea.firebaseapp.com",
-    projectId: "soireeespritgea",
-    storageBucket: "soireeespritgea.firebasestorage.app",
-    messagingSenderId: "155827688313",
-    appId: "1:155827688313:web:132270277d7b12128895a8",
-    measurementId: "G-7SZK8KMG3Q"
-  };
-  // ================================================
+    const firebaseConfig = {
+      apiKey: "AIzaSyBRlEU_av-QMbB6GBCOJXSZqEps0MxOWeQ",
+      authDomain: "soireeespritgea.firebaseapp.com",
+      projectId: "soireeespritgea",
+      storageBucket: "soireeespritgea.firebasestorage.app",
+      messagingSenderId: "155827688313",
+      appId: "1:155827688313:web:132270277d7b12128895a8",
+      measurementId: "G-7SZK8KMG3Q"
+    };
 
-  const app = initializeApp(firebaseConfig);
-  const auth = getAuth(app);
-  const db = getFirestore(app);
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
 
-  // --- Map setup ---
-  const map = L.map('map').setView([48.956, 2.888], 10);
-  L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(map);
+    const map = L.map('map').setView([48.956, 2.888], 10);
+    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(map);
+    setTimeout(()=> map.invalidateSize(), 300);
 
-  // force le redraw de la carte après 300ms (résout le "carte vide")
-  setTimeout(()=>{ try{ map.invalidateSize(); }catch(e){console.warn('invalidateSize failed', e);} }, 300);
+    const mareuil = { lat: 48.956, lng: 2.888 };
+    const markersLayer = L.layerGroup().addTo(map);
+    const haversine = (a,b)=>{const R=6371;const dLat=(b.lat-a.lat)*Math.PI/180;const dLng=(b.lng-a.lng)*Math.PI/180;const sa=Math.sin(dLat/2)**2+Math.cos(a.lat*Math.PI/180)*Math.cos(b.lat*Math.PI/180)*Math.sin(dLng/2)**2;return 2*R*Math.asin(Math.sqrt(sa));};
 
-  const venueLatLngs = {
-    'Mareuil-lès-Meaux': { lat: 48.956, lng: 2.888 },
-    'Champs-sur-Marne': { lat: 48.856, lng: 2.556 }
-  };
+    let tempPoint = null;
 
-  const markersLayer = L.layerGroup().addTo(map);
-
-  const haversine = (a,b)=>{const R=6371;const dLat=(b.lat-a.lat)*Math.PI/180;const dLng=(b.lng-a.lng)*Math.PI/180;const sa=Math.sin(dLat/2)**2+Math.cos(a.lat*Math.PI/180)*Math.cos(b.lat*Math.PI/180)*Math.sin(dLng/2)**2;return 2*R*Math.asin(Math.sqrt(sa));};
-
-  let tempPoint = null;
-
-  document.getElementById('placeOnMapBtn').addEventListener('click', ()=>{
-    alert('Clique sur la carte pour placer ton point.');
-    map.once('click', e=>{
-      tempPoint = e.latlng;
-      L.marker(tempPoint).addTo(map).bindPopup('Point temporaire (clique Soumettre pour envoyer)').openPopup();
+    document.getElementById('placeOnMapBtn').addEventListener('click', ()=>{
+      alert('Clique sur la carte pour placer ton point.');
+      map.once('click', e=>{
+        tempPoint = e.latlng;
+        L.marker(tempPoint).addTo(map).bindPopup('Point temporaire').openPopup();
+      });
     });
-  });
 
-  async function geocode(query){
-    const url = new URL('https://nominatim.openstreetmap.org/search');
-    url.searchParams.set('q', query);
-    url.searchParams.set('format','jsonv2');
-    url.searchParams.set('limit','1');
-    url.searchParams.set('countrycodes','fr');
-    const r = await fetch(url);
-    if(!r.ok) throw new Error('Erreur géocodage: ' + r.status);
-    const j = await r.json();
-    if(!j.length) throw new Error('Aucun résultat');
-    return { lat:+j[0].lat, lng:+j[0].lon, display:j[0].display_name };
-  }
-
-  document.getElementById('geocodeBtn').addEventListener('click', async ()=>{
-    const q = document.getElementById('inputLocation').value.trim(); if(!q) return alert('Tape une adresse/ville');
-    try{
-      const r = await geocode(q);
-      tempPoint = { lat:r.lat, lng:r.lng, display:r.display };
-      L.marker([r.lat,r.lng]).addTo(map).bindPopup('Point temporaire').openPopup();
-      map.panTo([r.lat,r.lng]);
-      setTimeout(()=>map.invalidateSize(),200);
-    }catch(e){ console.error(e); alert('Géocodage: '+e.message); }
-  });
-
-  document.getElementById('submitAnon').addEventListener('click', async ()=>{
-    if(!tempPoint) return alert("Place d'abord un point ou géocode une adresse.");
-    const venue = document.getElementById('visibleVenue').value;
-    try{
-      await addDoc(collection(db,'submissions'),{
-        createdAt: new Date().toISOString(),
-        lat: tempPoint.lat,
-        lng: tempPoint.lng,
-        display: tempPoint.display||null,
-        venueChoice: venue
-      });
-      alert('Soumis. Merci !');
-      tempPoint = null;
-    }catch(e){ console.error('Firestore write error', e); alert('Erreur envoi: '+e.message); }
-  });
-
-  // --- Auth (admin) ---
-  document.getElementById('adminSignIn').addEventListener('click', async ()=>{
-    const email = document.getElementById('adminEmail').value.trim();
-    const pass = document.getElementById('adminPass').value;
-    if(!email || !pass) return alert('Email + mot de passe requis');
-    try{
-      const cred = await signInWithEmailAndPassword(auth,email,pass);
-      console.log('connecté', cred.user.uid);
-      alert('Connecté en tant que ' + email);
-      // redraw map after auth (just in case)
-      setTimeout(()=>map.invalidateSize(), 300);
-    }catch(e){
-      console.error('login error', e);
-      alert('Erreur login: '+ e.message + '\\n(Ouvre la console dev pour plus de détails)');
+    async function geocode(query){
+      const url = new URL('https://nominatim.openstreetmap.org/search');
+      url.searchParams.set('q', query);
+      url.searchParams.set('format','jsonv2');
+      url.searchParams.set('limit','1');
+      url.searchParams.set('countrycodes','fr');
+      const r = await fetch(url);
+      if(!r.ok) throw new Error('Erreur géocodage');
+      const j = await r.json();
+      if(!j.length) throw new Error('Aucun résultat');
+      return { lat:+j[0].lat, lng:+j[0].lon, display:j[0].display_name };
     }
-  });
-  document.getElementById('adminSignOut').addEventListener('click', async ()=>{ try{ await signOut(auth); alert('Déconnecté'); }catch(e){console.warn(e)} });
 
-  onAuthStateChanged(auth, async user=>{
-    if(user){
-      document.getElementById('adminPanelShort').classList.remove('hidden');
-      document.getElementById('authBlock').classList.add('hidden');
-      console.log('Auth state: connected', user.uid);
-    }else{
-      document.getElementById('adminPanelShort').classList.add('hidden');
-      document.getElementById('authBlock').classList.remove('hidden');
-      console.log('Auth state: disconnected');
-    }
-    setTimeout(()=>map.invalidateSize(),200);
-  });
+    document.getElementById('geocodeBtn').addEventListener('click', async ()=>{
+      const q = document.getElementById('inputLocation').value.trim();
+      if(!q) return alert('Tape une adresse');
+      try{
+        const r = await geocode(q);
+        tempPoint = { lat:r.lat, lng:r.lng, display:r.display };
+        L.marker([r.lat,r.lng]).addTo(map).bindPopup('Point temporaire').openPopup();
+        map.panTo([r.lat,r.lng]);
+      }catch(e){ alert(e.message); }
+    });
 
-  document.getElementById('openAdminFull').addEventListener('click', async ()=>{
-    try{
-      const q = query(collection(db,'submissions'), orderBy('createdAt','asc'));
-      const snap = await getDocs(q);
-      const rows = [];
-      markersLayer.clearLayers();
-      snap.forEach(doc=>{
-        const d = doc.data();
-        rows.push(d);
-        const p = L.marker([d.lat,d.lng]).addTo(markersLayer);
-        const v = venueLatLngs[d.venueChoice] || null;
-        let extra = '';
-        if(v){ const dist = haversine({lat:d.lat,lng:d.lng}, v).toFixed(1); extra = `<br>Distance → ${dist} km depuis ${d.venueChoice}` }
-        p.bindPopup(`<b>Soumis</b><br>${d.display||''}${extra}`);
-      });
-      const win = window.open('','_blank');
-      win.document.write('<h2>Tableau Admin — Submissions</h2>');
-      win.document.write('<p>Total: '+rows.length+'</p>');
-      win.document.write('<table border=1 cellpadding=6><tr><th>#</th><th>date</th><th>display</th><th>lat</th><th>lng</th><th>venue</th></tr>');
-      rows.forEach((r,i)=>{ win.document.write(`<tr><td>${i+1}</td><td>${r.createdAt}</td><td>${r.display||''}</td><td>${r.lat}</td><td>${r.lng}</td><td>${r.venueChoice||''}</td></tr>`); });
-      win.document.write('</table>');
-    }catch(e){
-      console.error('Erreur lecture submissions', e);
-      alert('Impossible de récupérer les soumissions : '+ e.message + '\\nVérifie tes règles Firestore et que ton compte admin a bien l\'UID inscrit dans les règles.');
-    }
-  });
+    document.getElementById('submitAnon').addEventListener('click', async ()=>{
+      const last = document.getElementById('inputLastName').value.trim();
+      const first = document.getElementById('inputFirstName').value.trim();
+      const phone = document.getElementById('inputPhone').value.trim();
+      const addr = document.getElementById('inputLocation').value.trim();
+      const note = document.getElementById('inputNote').value.trim();
+      const consent = document.getElementById('consentChk').checked;
+      const drop = document.getElementById('dropPoint').value;
 
-  document.getElementById('exportCsvAdmin').addEventListener('click', async ()=>{
-    try{
-      const q = query(collection(db,'submissions'), orderBy('createdAt','asc'));
-      const snap = await getDocs(q);
-      const rows = [['createdAt','display','lat','lng','venue']];
-      snap.forEach(doc=>{ const d = doc.data(); rows.push([d.createdAt||'', d.display||'', d.lat, d.lng, d.venueChoice||'']); });
-      const csv = rows.map(r=> r.map(v=> '"'+String(v).replaceAll('"','""')+'"').join(',')).join('\\n');
-      const blob = new Blob([csv], { type:'text/csv;charset=utf-8' }); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'submissions_gea.csv'; a.click();
-    }catch(e){ console.error('export error', e); alert('Erreur export: '+ e.message); }
-  });
+      if(!last || !first || !phone) return alert('Nom, prénom et téléphone requis.');
+      if(!consent) return alert('Consentement requis.');
+      if(!addr && !tempPoint && !drop) return alert('Donne une adresse, place un point ou choisis un point de dépose.');
 
-  // petit helper: si la carte est vide, appuie sur F5 pour forcer reload et regarde la console (F12)
-</script>
-
-
-    // FIN du module
-
-    // ---------- NOTES IMPORTANTES (à lire) ----------
-    // 1) Sécurité : le front-end ne suffit PAS pour restreindre l'accès aux données. C'est pourquoi
-    //    on utilise Firestore + rules (ci-dessous) pour empêcher la lecture par des utilisateurs non-admin.
-    // 2) Configuration Firestore rules (exemple) :
-    /*
-    rules_version = '2';
-    service cloud.firestore {
-      match /databases/{database}/documents {
-        match /submissions/{docId} {
-          allow create: if true; // tout le monde peut créer
-          allow read, list, delete: if request.auth != null && request.auth.uid == '<ADMIN_UID>';
-        }
+      if(addr && !tempPoint){
+        try{
+          const r = await geocode(addr);
+          tempPoint = { lat:r.lat, lng:r.lng, display:r.display };
+        }catch(e){ return alert('Adresse invalide.'); }
       }
-    }
-    */
-    // Remplace <ADMIN_UID> par l'UID de ton compte admin (disponible dans console Firebase > Authentication > Users).
 
-    // 3) Déployer :
-    // - Crée le projet Firebase, active Authentication (e-mail/mot de passe) et Firestore.
-    // - Ajoute un utilisateur admin via la console (email+mdp). Récupère son UID.
-    // - Colle la config firebaseConfig ci-dessus dans ce fichier.
-    // - Modifie les Firestore rules avec l'UID admin.
-    // - Héberge le fichier sur GitHub Pages — l'app frontend demandera au visiteur de s'authentifier
-    //   pour voir les données (seul l'admin pourra le faire).
-
-    // 4) Alternative rapide et moins sûre : si tu ne veux pas configurer Firebase,
-    //    je peux t'ajouter un simple "code admin" côté client (mais attention: n'importe qui techniquement
-    //    peut lire le JS et décoder ce code. Ne l'utilise pas pour protéger des données sensibles).
-
+      await addDoc(collection(db,'ramassage'), {
+        createdAt: new Date().toISOString(),
+        lastName: last,
+        firstName: first,
+        phone: phone,
+        note: note,
+        lat: tempPoint ? tempPoint.lat : null,
+        lng: tempPoint ? tempPoint.lng : null,
+        display: tempPoint ? tempPoint.display : addr || null,
+        dropPoint: drop || null,
+        venue: 'Mareuil-lès-Meaux'
+      });
+      alert('Soumission enregistrée. Merci !');
+      tempPoint = null;
+    });
   </script>
 </body>
 </html>
