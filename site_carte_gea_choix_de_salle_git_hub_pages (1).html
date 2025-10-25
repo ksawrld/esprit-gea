@@ -109,101 +109,155 @@
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
   <script type="module">
-    import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js';
-    import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js';
-    import { getFirestore, collection, addDoc, getDocs, query, orderBy } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js';
+  import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js';
+  import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js';
+  import { getFirestore, collection, addDoc, getDocs, query, orderBy } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js';
 
-    const firebaseConfig = {
-      apiKey: "AIzaSyBRlEU_av-QMbB6GBCOJXSZqEps0MxOWeQ",
-      authDomain: "soireeespritgea.firebaseapp.com",
-      projectId: "soireeespritgea",
-      storageBucket: "soireeespritgea.firebasestorage.app",
-      messagingSenderId: "155827688313",
-      appId: "1:155827688313:web:132270277d7b12128895a8",
-      measurementId: "G-7SZK8KMG3Q"
-    };
+  // --- CONFIG FIREBASE ---
+  const firebaseConfig = {
+    apiKey: "AIzaSyBRlEU_av-QMbB6GBCOJXSZqEps0MxOWeQ",
+    authDomain: "soireeespritgea.firebaseapp.com",
+    projectId: "soireeespritgea",
+    storageBucket: "soireeespritgea.firebasestorage.app",
+    messagingSenderId: "155827688313",
+    appId: "1:155827688313:web:132270277d7b12128895a8",
+    measurementId: "G-7SZK8KMG3Q"
+  };
 
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const db = getFirestore(app);
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db = getFirestore(app);
 
-    const map = L.map('map').setView([48.956, 2.888], 10);
-    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(map);
-    setTimeout(()=> map.invalidateSize(), 300);
+  // --- MAP ---
+  const map = L.map('map').setView([48.956, 2.888], 10);
+  L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(map);
+  setTimeout(()=> map.invalidateSize(), 300);
 
-    const mareuil = { lat: 48.956, lng: 2.888 };
-    const markersLayer = L.layerGroup().addTo(map);
-    const haversine = (a,b)=>{const R=6371;const dLat=(b.lat-a.lat)*Math.PI/180;const dLng=(b.lng-a.lng)*Math.PI/180;const sa=Math.sin(dLat/2)**2+Math.cos(a.lat*Math.PI/180)*Math.cos(b.lat*Math.PI/180)*Math.sin(dLng/2)**2;return 2*R*Math.asin(Math.sqrt(sa));};
+  const mareuil = { lat: 48.956, lng: 2.888 };
+  const markersLayer = L.layerGroup().addTo(map);
+  const haversine = (a,b)=>{const R=6371;const dLat=(b.lat-a.lat)*Math.PI/180;const dLng=(b.lng-a.lng)*Math.PI/180;const sa=Math.sin(dLat/2)**2+Math.cos(a.lat*Math.PI/180)*Math.cos(b.lat*Math.PI/180)*Math.sin(dLng/2)**2;return 2*R*Math.asin(Math.sqrt(sa));};
 
-    let tempPoint = null;
+  let tempPoint = null;
 
-    document.getElementById('placeOnMapBtn').addEventListener('click', ()=>{
-      alert('Clique sur la carte pour placer ton point.');
-      map.once('click', e=>{
-        tempPoint = e.latlng;
-        L.marker(tempPoint).addTo(map).bindPopup('Point temporaire').openPopup();
-      });
+  // --- GÉOCODAGE ---
+  document.getElementById('placeOnMapBtn').addEventListener('click', ()=>{
+    alert('Clique sur la carte pour placer ton point.');
+    map.once('click', e=>{
+      tempPoint = e.latlng;
+      L.marker(tempPoint).addTo(map).bindPopup('Point temporaire').openPopup();
     });
+  });
 
-    async function geocode(query){
-      const url = new URL('https://nominatim.openstreetmap.org/search');
-      url.searchParams.set('q', query);
-      url.searchParams.set('format','jsonv2');
-      url.searchParams.set('limit','1');
-      url.searchParams.set('countrycodes','fr');
-      const r = await fetch(url);
-      if(!r.ok) throw new Error('Erreur géocodage');
-      const j = await r.json();
-      if(!j.length) throw new Error('Aucun résultat');
-      return { lat:+j[0].lat, lng:+j[0].lon, display:j[0].display_name };
+  async function geocode(query){
+    const url = new URL('https://nominatim.openstreetmap.org/search');
+    url.searchParams.set('q', query);
+    url.searchParams.set('format','jsonv2');
+    url.searchParams.set('limit','1');
+    url.searchParams.set('countrycodes','fr');
+    const r = await fetch(url);
+    const j = await r.json();
+    if(!j.length) throw new Error('Adresse non trouvée');
+    return { lat:+j[0].lat, lng:+j[0].lon, display:j[0].display_name };
+  }
+
+  document.getElementById('geocodeBtn').addEventListener('click', async ()=>{
+    const q = document.getElementById('inputLocation').value.trim();
+    if(!q) return alert('Tape une adresse');
+    try{
+      const r = await geocode(q);
+      tempPoint = { lat:r.lat, lng:r.lng, display:r.display };
+      L.marker([r.lat,r.lng]).addTo(map).bindPopup('Point temporaire').openPopup();
+      map.panTo([r.lat,r.lng]);
+    }catch(e){ alert(e.message); }
+  });
+
+  // --- FORM SUBMIT ---
+  document.getElementById('submitAnon').addEventListener('click', async ()=>{
+    const last = document.getElementById('inputLastName').value.trim();
+    const first = document.getElementById('inputFirstName').value.trim();
+    const phone = document.getElementById('inputPhone').value.trim();
+    const addr = document.getElementById('inputLocation').value.trim();
+    const note = document.getElementById('inputNote').value.trim();
+    const consent = document.getElementById('consentChk').checked;
+    const drop = document.getElementById('dropPoint').value;
+
+    if(!last || !first || !phone) return alert('Nom, prénom et téléphone requis.');
+    if(!consent) return alert('Consentement requis.');
+    if(!addr && !tempPoint && !drop) return alert('Donne une adresse, place un point ou choisis un point de dépose.');
+
+    if(addr && !tempPoint){
+      try{
+        const r = await geocode(addr);
+        tempPoint = { lat:r.lat, lng:r.lng, display:r.display };
+      }catch(e){ return alert('Adresse invalide.'); }
     }
 
-    document.getElementById('geocodeBtn').addEventListener('click', async ()=>{
-      const q = document.getElementById('inputLocation').value.trim();
-      if(!q) return alert('Tape une adresse');
-      try{
-        const r = await geocode(q);
-        tempPoint = { lat:r.lat, lng:r.lng, display:r.display };
-        L.marker([r.lat,r.lng]).addTo(map).bindPopup('Point temporaire').openPopup();
-        map.panTo([r.lat,r.lng]);
-      }catch(e){ alert(e.message); }
+    await addDoc(collection(db,'ramassage'), {
+      createdAt: new Date().toISOString(),
+      lastName: last,
+      firstName: first,
+      phone: phone,
+      note: note,
+      lat: tempPoint ? tempPoint.lat : null,
+      lng: tempPoint ? tempPoint.lng : null,
+      display: tempPoint ? tempPoint.display : addr || null,
+      dropPoint: drop || null,
+      venue: 'Mareuil-lès-Meaux'
     });
+    alert('Soumission enregistrée. Merci !');
+    tempPoint = null;
+  });
 
-    document.getElementById('submitAnon').addEventListener('click', async ()=>{
-      const last = document.getElementById('inputLastName').value.trim();
-      const first = document.getElementById('inputFirstName').value.trim();
-      const phone = document.getElementById('inputPhone').value.trim();
-      const addr = document.getElementById('inputLocation').value.trim();
-      const note = document.getElementById('inputNote').value.trim();
-      const consent = document.getElementById('consentChk').checked;
-      const drop = document.getElementById('dropPoint').value;
+  // --- AUTH ADMIN ---
+  document.getElementById('adminSignIn').addEventListener('click', async ()=>{
+    const email = document.getElementById('adminEmail').value.trim();
+    const pass = document.getElementById('adminPass').value.trim();
+    try{
+      await signInWithEmailAndPassword(auth, email, pass);
+      alert('Connexion réussie');
+    }catch(e){ alert('Erreur: ' + e.message); }
+  });
 
-      if(!last || !first || !phone) return alert('Nom, prénom et téléphone requis.');
-      if(!consent) return alert('Consentement requis.');
-      if(!addr && !tempPoint && !drop) return alert('Donne une adresse, place un point ou choisis un point de dépose.');
+  document.getElementById('adminSignOut').addEventListener('click', ()=> signOut(auth));
 
-      if(addr && !tempPoint){
-        try{
-          const r = await geocode(addr);
-          tempPoint = { lat:r.lat, lng:r.lng, display:r.display };
-        }catch(e){ return alert('Adresse invalide.'); }
+  onAuthStateChanged(auth, async user=>{
+    const adminPanel = document.getElementById('adminPanelShort');
+    const authBlock = document.getElementById('authBlock');
+    if(user){
+      adminPanel.classList.remove('hidden');
+      authBlock.classList.add('hidden');
+    } else {
+      adminPanel.classList.add('hidden');
+      authBlock.classList.remove('hidden');
+    }
+  });
+
+  // --- ADMIN TABLEAU ---
+  document.getElementById('openAdminFull').addEventListener('click', async ()=>{
+    const q = query(collection(db,'ramassage'), orderBy('createdAt','asc'));
+    const snap = await getDocs(q);
+    const rows = [];
+    markersLayer.clearLayers();
+
+    let totalDist = 0, count = 0;
+    snap.forEach(doc=>{
+      const d = doc.data();
+      rows.push(d);
+      if(d.lat && d.lng){
+        const p = L.marker([d.lat,d.lng]).addTo(markersLayer);
+        const dist = haversine({lat:d.lat,lng:d.lng}, mareuil);
+        totalDist += dist; count++;
+        p.bindPopup(`<b>${d.firstName} ${d.lastName}</b><br>${d.display||''}<br>${dist.toFixed(1)} km de Mareuil`);
       }
-
-      await addDoc(collection(db,'ramassage'), {
-        createdAt: new Date().toISOString(),
-        lastName: last,
-        firstName: first,
-        phone: phone,
-        note: note,
-        lat: tempPoint ? tempPoint.lat : null,
-        lng: tempPoint ? tempPoint.lng : null,
-        display: tempPoint ? tempPoint.display : addr || null,
-        dropPoint: drop || null,
-        venue: 'Mareuil-lès-Meaux'
-      });
-      alert('Soumission enregistrée. Merci !');
-      tempPoint = null;
     });
-  </script>
+
+    const avg = count ? (totalDist/count).toFixed(1) : '0';
+    const win = window.open('','_blank');
+    win.document.write(`<h2>Tableau Ramassage</h2><p>Total: ${rows.length} demandes<br>Moyenne distance: ${avg} km</p>`);
+    win.document.write('<table border=1 cellpadding=6><tr><th>#</th><th>date</th><th>nom</th><th>prénom</th><th>tel</th><th>display</th><th>dropPoint</th><th>note</th></tr>');
+    rows.forEach((r,i)=>{ win.document.write(`<tr><td>${i+1}</td><td>${r.createdAt}</td><td>${r.lastName}</td><td>${r.firstName}</td><td>${r.phone}</td><td>${r.display||''}</td><td>${r.dropPoint||''}</td><td>${r.note||''}</td></tr>`); });
+    win.document.write('</table>');
+  });
+</script>
 </body>
 </html>
