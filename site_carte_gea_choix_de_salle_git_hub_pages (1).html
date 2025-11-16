@@ -111,12 +111,10 @@
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
 
   <script type="module">
-  // --------- SCRIPT (complet & corrigé) ----------
   import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js';
   import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js';
   import { getFirestore, collection, addDoc, getDocs, query, orderBy } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js';
 
-  // Firebase config (la tienne)
   const firebaseConfig = {
     apiKey: "AIzaSyBRlEU_av-QMbB6GBCOJXSZqEps0MxOWeQ",
     authDomain: "soireeespritgea.firebaseapp.com",
@@ -127,17 +125,13 @@
     measurementId: "G-7SZK8KMG3Q"
   };
 
-  // init
   const app = initializeApp(firebaseConfig);
   const auth = getAuth(app);
   const db = getFirestore(app);
 
-  // Map init
   const map = L.map('map').setView([48.956, 2.888], 10);
   L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(map);
-  // redraw after layout
-  window.addEventListener('load', ()=> setTimeout(()=> map.invalidateSize(), 200));
-  setTimeout(()=> map.invalidateSize(), 400);
+  setTimeout(() => map.invalidateSize(), 300);
 
   const mareuil = { lat:48.956, lng:2.888 };
   const markersLayer = L.layerGroup().addTo(map);
@@ -152,10 +146,6 @@
 
   let tempPoint = null;
 
-  // utils
-  function validatePhone(p){ return /^\+?\d[\d \-]{6,}$/.test(p); }
-
-  // --- interactions map/geocode ---
   document.getElementById('placeOnMapBtn').addEventListener('click', ()=>{
     alert('Clique sur la carte pour placer ton point.');
     map.once('click', e=>{
@@ -171,25 +161,22 @@
     url.searchParams.set('limit','1');
     url.searchParams.set('countrycodes','fr');
     const r = await fetch(url);
-    if(!r.ok) throw new Error('Erreur géocodage: '+r.status);
     const j = await r.json();
-    if(!j.length) throw new Error('Aucun résultat');
-    return { lat:+j[0].lat, lng:+j[0].lon, display: j[0].display_name };
+    if(!j.length) throw new Error('Adresse introuvable');
+    return { lat:+j[0].lat, lng:+j[0].lon, display:j[0].display_name };
   }
 
   document.getElementById('geocodeBtn').addEventListener('click', async ()=>{
     const q = document.getElementById('inputLocation').value.trim();
     if(!q) return alert('Tape une adresse');
     try{
-      const r = await geocode(q);
+      const r = await gecode(q);
       tempPoint = { lat:r.lat, lng:r.lng, display:r.display };
       L.marker([r.lat, r.lng]).addTo(map).bindPopup('Point temporaire').openPopup();
       map.panTo([r.lat, r.lng]);
-      setTimeout(()=>map.invalidateSize(), 150);
-    }catch(e){ console.error(e); alert(e.message); }
+    }catch(e){ alert(e.message); }
   });
 
-  // clear form
   document.getElementById('clearForm').addEventListener('click', ()=>{
     document.getElementById('inputLastName').value = '';
     document.getElementById('inputFirstName').value = '';
@@ -199,10 +186,8 @@
     document.getElementById('consentChk').checked = false;
     document.getElementById('dropPoint').value = '';
     tempPoint = null;
-    alert('Formulaire effacé.');
   });
 
-  // submit public form
   document.getElementById('submitAnon').addEventListener('click', async ()=>{
     const last = document.getElementById('inputLastName').value.trim();
     const first = document.getElementById('inputFirstName').value.trim();
@@ -213,59 +198,43 @@
     const drop = document.getElementById('dropPoint').value;
 
     if(!last || !first) return alert('Nom et prénom obligatoires.');
-    if(!phone || !validatePhone(phone)) return alert('Téléphone invalide.');
+    if(!phone) return alert('Téléphone obligatoire.');
     if(!consent) return alert('Consentement requis.');
-    if(!addr && !tempPoint && !drop) return alert('Donne une adresse, place un point ou choisis un point de dépose.');
+    if(!addr && !tempPoint && !drop) return alert('Adresse, point ou dépose obligatoire.');
 
     if(addr && !tempPoint){
       try{
         const r = await geocode(addr);
         tempPoint = { lat:r.lat, lng:r.lng, display:r.display };
-      }catch(e){ console.error(e); return alert("Impossible de géocoder l'adresse."); }
+      }catch(e){ return alert("Adresse invalide"); }
     }
 
-    try{
-      await addDoc(collection(db,'ramassage'), {
-        createdAt: new Date().toISOString(),
-        lastName: last,
-        firstName: first,
-        phone: phone,
-        note: note || null,
-        lat: tempPoint ? tempPoint.lat : null,
-        lng: tempPoint ? tempPoint.lng : null,
-        display: tempPoint ? tempPoint.display : addr || null,
-        dropPoint: drop || null,
-        venue: 'Mareuil-lès-Meaux',
-        consent: true
-      });
-      alert('Soumission enregistrée. Merci !');
-      // small reset
-      document.getElementById('inputLocation').value = '';
-      document.getElementById('inputNote').value = '';
-      document.getElementById('consentChk').checked = false;
-      document.getElementById('dropPoint').value = '';
-      tempPoint = null;
-    }catch(e){ console.error(e); alert('Erreur enregistrement: '+e.message); }
+    await addDoc(collection(db,'ramassage'), {
+      createdAt: new Date().toISOString(),
+      lastName: last,
+      firstName: first,
+      phone: phone,
+      note: note || null,
+      lat: tempPoint ? tempPoint.lat : null,
+      lng: tempPoint ? tempPoint.lng : null,
+      display: tempPoint ? tempPoint.display : addr || null,
+      dropPoint: drop || null,
+      venue: 'Mareuil-lès-Meaux'
+    });
+
+    alert('Soumission enregistrée. Merci !');
+    tempPoint = null;
   });
 
-  // --- AUTH ---
   document.getElementById('adminSignIn').addEventListener('click', ()=>{
     const email = document.getElementById('adminEmail').value.trim();
     const pass = document.getElementById('adminPass').value.trim();
     signInWithEmailAndPassword(auth, email, pass)
-      .then(cred => {
-        console.log('admin connected', cred.user.uid);
-        alert('Connexion OK');
-      })
-      .catch(e => {
-        console.error('auth error', e);
-        alert('Erreur login: ' + e.message);
-      });
+      .then(()=> alert('Connexion réussie'))
+      .catch(e=> alert('Erreur: '+e.message));
   });
 
-  document.getElementById('adminSignOut').addEventListener('click', ()=> {
-    signOut(auth).then(()=>{ alert('Déconnecté'); }).catch(e=>console.warn(e));
-  });
+  document.getElementById('adminSignOut').addEventListener('click', ()=> signOut(auth));
 
   onAuthStateChanged(auth, user=>{
     const adminPanel = document.getElementById('adminPanelShort');
@@ -273,66 +242,60 @@
     if(user){
       adminPanel.classList.remove('hidden');
       authBlock.classList.add('hidden');
-      // redraw map for admin
-      setTimeout(()=>map.invalidateSize(),200);
     } else {
       adminPanel.classList.add('hidden');
       authBlock.classList.remove('hidden');
     }
   });
 
-  // --- ADMIN: open table (non-async open) ---
   document.getElementById('openAdminFull').addEventListener('click', ()=>{
     const q = query(collection(db,'ramassage'), orderBy('createdAt','asc'));
-    getDocs(q).then(snap => {
-      const rows = [];
+    getDocs(q).then(snap=>{
+      const rows=[];
       markersLayer.clearLayers();
-      let totalDist = 0, count = 0;
-      snap.forEach(doc => {
-        const d = doc.data();
+      let totalDist=0,count=0;
+
+      snap.forEach(doc=>{
+        const d=doc.data();
         rows.push(d);
         if(d.lat && d.lng){
           const dist = haversine({lat:d.lat,lng:d.lng}, mareuil);
-          totalDist += dist; count++;
-          const m = L.marker([d.lat,d.lng]).addTo(markersLayer);
-          m.bindPopup(`<b>${d.firstName} ${d.lastName}</b><br>${d.display||''}<br>${dist.toFixed(1)} km`);
+          totalDist+=dist; count++;
+          L.marker([d.lat,d.lng]).addTo(markersLayer).bindPopup(
+            `<b>${d.firstName} ${d.lastName}</b><br>${d.display}<br>${dist.toFixed(1)} km`
+          );
         }
       });
 
-      const avg = count ? (totalDist/count).toFixed(1) : '0';
-      const win = window.open('','_blank');
-      if(!win){ alert('Popup bloquée par le navigateur, autorise les popups pour ce site.'); return; }
-      win.document.write('<h2>Tableau Ramassage</h2>');
-      win.document.write('<p>Total: '+rows.length+' demandes • Distance moyenne: '+avg+' km</p>');
+      const avg = count ? (totalDist/count).toFixed(1) : "0";
+      const win = window.open("","_blank");
+      win.document.write(`<h2>Tableau Ramassage</h2><p>Total: ${rows.length}<br>Moyenne: ${avg} km</p>`);
       win.document.write('<table border=1 cellpadding=6><tr><th>#</th><th>date</th><th>nom</th><th>prénom</th><th>tel</th><th>display</th><th>dropPoint</th><th>note</th></tr>');
-      rows.forEach((r,i) => {
-        win.document.write('<tr><td>'+(i+1)+'</td><td>'+ (r.createdAt||'') +'</td><td>'+ (r.lastName||'') +'</td><td>'+ (r.firstName||'') +'</td><td>'+ (r.phone||'') +'</td><td>'+ (r.display||'') +'</td><td>'+ (r.dropPoint||'') +'</td><td>'+ (r.note||'') +'</td></tr>');
+      rows.forEach((r,i)=>{
+        win.document.write(`<tr><td>${i+1}</td><td>${r.createdAt}</td><td>${r.lastName}</td><td>${r.firstName}</td><td>${r.phone}</td><td>${r.display}</td><td>${r.dropPoint||''}</td><td>${r.note||''}</td></tr>`);
       });
       win.document.write('</table>');
-    }).catch(e => { console.error(e); alert('Erreur récupération: '+e.message); });
+    });
   });
 
-  // --- ADMIN: export CSV (non-async) ---
   document.getElementById('exportCsvAdmin').addEventListener('click', ()=>{
     const q = query(collection(db,'ramassage'), orderBy('createdAt','asc'));
-    getDocs(q).then(snap => {
-      const rows = [['createdAt','lastName','firstName','phone','display','dropPoint','note','lat','lng']];
-      snap.forEach(doc=>{
-        const d = doc.data();
-        rows.push([d.createdAt||'', d.lastName||'', d.firstName||'', d.phone||'', d.display||'', d.dropPoint||'', d.note||'', d.lat||'', d.lng||'']);
-      });
-      const csv = rows.map(r => r.map(v => '"' + String(v).replace(/"/g,'""') + '"').join(',')).join('\n');
-      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-      const a = document.createElement('a');
-      a.href = URL.createObjectURL(blob);
-      a.download = 'ramassage_export.csv';
-      a.click();
-    }).catch(e => { console.error(e); alert('Erreur export: '+e.message); });
-  });
 
-  // ---------------------------------------------------
-  // small safety: log uncaught errors so you can see them in console
-  window.addEventListener('error', (ev)=> { console.error('Unhandled error', ev.error || ev.message); });
+    getDocs(q).then(snap=>{
+      const rows=[["createdAt","lastName","firstName","phone","display","dropPoint","note","lat","lng"]];
+      snap.forEach(doc=>{
+        const d=doc.data();
+        rows.push([d.createdAt||"",d.lastName||"",d.firstName||"",d.phone||"",d.display||"",d.dropPoint||"",d.note||"",d.lat||"",d.lng||""]);
+      });
+
+      const csv=rows.map(r=>r.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n');
+      const blob=new Blob([csv],{type:"text/csv;charset=utf-8;"});
+      const a=document.createElement("a");
+      a.href=URL.createObjectURL(blob);
+      a.download="ramassage.csv";
+      a.click();
+    });
+  });
   </script>
 
 </body>
