@@ -46,44 +46,58 @@
   <div class="layout">
     <aside>
       <div class="stack">
+
+        <!-- FORM PUBLIC -->
         <div class="card">
           <h2>Soumettre pour passage</h2>
+
           <label class="muted">Nom</label>
-          <input id="inputLastName" placeholder="Ex: Dupont" />
+          <input id="inputLastName" />
+
           <label class="muted">Prénom</label>
-          <input id="inputFirstName" placeholder="Ex: Lucas" />
+          <input id="inputFirstName" />
+
           <label class="muted">Téléphone</label>
-          <input id="inputPhone" placeholder="Ex: +33 6 12 34 56 78" />
-          <label class="muted">Adresse (ou laisse vide et place un point sur la carte)</label>
+          <input id="inputPhone" placeholder="+33 6…" />
+
+          <label class="muted">Adresse (ou place un point)</label>
           <input id="inputLocation" placeholder="Ex: 10 rue Exemple, Meaux" />
+
           <div style="display:flex;gap:8px;margin-top:8px">
-            <button class="btn" id="geocodeBtn">Géocoder & ajouter</button>
+            <button class="btn" id="geocodeBtn">Géocoder</button>
             <button class="btn" id="placeOnMapBtn">Placer un point</button>
           </div>
-          <label class="muted" style="margin-top:8px">Point de ramassage (facultatif)</label>
+
+          <label class="muted">Point de ramassage</label>
           <select id="dropPoint">
             <option value="">Choisir un point</option>
             <option value="Gare de Meaux">Gare de Meaux</option>
             <option value="Campus IUT Meaux">Campus IUT Meaux</option>
             <option value="Centre de Mareuil">Centre de Mareuil</option>
-            <option value="Autre">Autre (indiquer en remarque)</option>
+            <option value="Autre">Autre (remarque)</option>
           </select>
-          <label class="muted" style="margin-top:8px">Message / remarque (optionnel)</label>
-          <textarea id="inputNote" placeholder="Ex: attendre à la gare, côté parking."></textarea>
-          <label style="margin-top:8px"><input type="checkbox" id="consentChk" /> <span class="small">J'accepte d'être contacté et transporté par l'équipe Esprit GEA.</span></label>
+
+          <label class="muted">Remarque</label>
+          <textarea id="inputNote"></textarea>
+
+          <label><input type="checkbox" id="consentChk"> <span class="small">J'accepte d'être contacté.</span></label>
+
           <div style="display:flex;gap:8px;margin-top:10px">
-            <button class="btn primary" id="submitAnon">Soumettre ma demande</button>
+            <button class="btn primary" id="submitAnon">Soumettre</button>
             <button class="btn" id="clearForm">Effacer</button>
           </div>
         </div>
 
+        <!-- LOGIN ADMIN -->
         <div class="card">
           <h2>Accès admin</h2>
           <div id="authBlock">
             <label class="muted">Email admin</label>
-            <input id="adminEmail" placeholder="email admin" />
+            <input id="adminEmail" />
+
             <label class="muted">Mot de passe</label>
-            <input id="adminPass" type="password" placeholder="mot de passe" />
+            <input id="adminPass" type="password" />
+
             <div style="display:flex;gap:8px;margin-top:8px">
               <button class="btn primary" id="adminSignIn">Se connecter</button>
               <button class="btn" id="adminSignOut">Se déconnecter</button>
@@ -91,13 +105,12 @@
           </div>
         </div>
 
+        <!-- PANEL ADMIN -->
         <div class="card hidden" id="adminPanelShort">
           <h2>Panneau Admin</h2>
-          <div class="muted">Tu es connecté. Accède au tableau des demandes.</div>
-          <div style="display:flex;gap:8px;margin-top:8px">
-            <button class="btn" id="openAdminFull">Ouvrir le tableau</button>
-            <button class="btn" id="exportCsvAdmin">Exporter CSV</button>
-          </div>
+          <div class="muted">Tu es connecté :</div>
+          <button class="btn" id="openAdminFull">Ouvrir le tableau</button>
+          <button class="btn" id="exportCsvAdmin">Exporter CSV</button>
         </div>
 
       </div>
@@ -108,195 +121,212 @@
     </main>
   </div>
 
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
   <script type="module">
-  import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js';
-  import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js';
-  import { getFirestore, collection, addDoc, getDocs, query, orderBy } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js';
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
+    import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
+    import { getFirestore, collection, addDoc, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
 
-  const firebaseConfig = {
-    apiKey: "AIzaSyBRlEU_av-QMbB6GBCOJXSZqEps0MxOWeQ",
-    authDomain: "soireeespritgea.firebaseapp.com",
-    projectId: "soireeespritgea",
-    storageBucket: "soireeespritgea.firebasestorage.app",
-    messagingSenderId: "155827688313",
-    appId: "1:155827688313:web:132270277d7b12128895a8",
-    measurementId: "G-7SZK8KMG3Q"
-  };
+    const firebaseConfig = {
+      apiKey: "AIzaSyBRlEU_av-QMbB6GBCOJXSZqEps0MxOWeQ",
+      authDomain: "soireeespritgea.firebaseapp.com",
+      projectId: "soireeespritgea",
+      storageBucket: "soireeespritgea.firebasestorage.app",
+      messagingSenderId: "155827688313",
+      appId: "1:155827688313:web:132270277d7b12128895a8",
+      measurementId: "G-7SZK8KMG3Q"
+    };
 
-  const app = initializeApp(firebaseConfig);
-  const auth = getAuth(app);
-  const db = getFirestore(app);
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
 
-  const map = L.map('map').setView([48.956, 2.888], 10);
-  L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(map);
-  setTimeout(() => map.invalidateSize(), 300);
+    const map = L.map("map").setView([48.956, 2.888], 10);
+    L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", { maxZoom: 19 }).addTo(map);
+    setTimeout(() => map.invalidateSize(), 300);
 
-  const mareuil = { lat:48.956, lng:2.888 };
-  const markersLayer = L.layerGroup().addTo(map);
+    const mareuil = { lat: 48.956, lng: 2.888 };
+    const markersLayer = L.layerGroup().addTo(map);
+    let tempPoint = null;
 
-  const haversine = (a,b)=>{
-    const R=6371;
-    const dLat=(b.lat-a.lat)*Math.PI/180;
-    const dLng=(b.lng-a.lng)*Math.PI/180;
-    const sa=Math.sin(dLat/2)**2 + Math.cos(a.lat*Math.PI/180)*Math.cos(b.lat*Math.PI/180)*Math.sin(dLng/2)**2;
-    return 2*R*Math.asin(Math.sqrt(sa));
-  };
+    const haversine = (a,b)=>{
+      const R=6371;
+      const dLat=(b.lat-a.lat)*Math.PI/180;
+      const dLng=(b.lng-a.lng)*Math.PI/180;
+      const sa=Math.sin(dLat/2)**2+Math.cos(a.lat*Math.PI/180)*Math.cos(b.lat*Math.PI/180)*Math.sin(dLng/2)**2;
+      return 2*R*Math.asin(Math.sqrt(sa));
+    };
 
-  let tempPoint = null;
-
-  document.getElementById('placeOnMapBtn').addEventListener('click', ()=>{
-    alert('Clique sur la carte pour placer ton point.');
-    map.once('click', e=>{
-      tempPoint = e.latlng;
-      L.marker(tempPoint).addTo(map).bindPopup('Point temporaire').openPopup();
+    // PLACE POINT
+    document.getElementById("placeOnMapBtn").addEventListener("click", ()=>{
+      alert("Clique sur la carte.");
+      map.once("click", e=>{
+        tempPoint = e.latlng;
+        L.marker(tempPoint).addTo(map).bindPopup("Point choisi").openPopup();
+      });
     });
-  });
 
-  async function geocode(q){
-    const url = new URL('https://nominatim.openstreetmap.org/search');
-    url.searchParams.set('q', q);
-    url.searchParams.set('format','jsonv2');
-    url.searchParams.set('limit','1');
-    url.searchParams.set('countrycodes','fr');
-    const r = await fetch(url);
-    const j = await r.json();
-    if(!j.length) throw new Error('Adresse introuvable');
-    return { lat:+j[0].lat, lng:+j[0].lon, display:j[0].display_name };
-  }
+    // GEOCODE
+    async function geocode(q){
+      const url = new URL("https://nominatim.openstreetmap.org/search");
+      url.searchParams.set("q", q);
+      url.searchParams.set("format", "jsonv2");
+      url.searchParams.set("limit", "1");
+      url.searchParams.set("countrycodes", "fr");
+      const r = await fetch(url);
+      const j = await r.json();
+      if(!j.length) throw new Error("Adresse introuvable");
+      return { lat:+j[0].lat, lng:+j[0].lon, display:j[0].display_name };
+    }
 
-  document.getElementById('geocodeBtn').addEventListener('click', async ()=>{
-    const q = document.getElementById('inputLocation').value.trim();
-    if(!q) return alert('Tape une adresse');
-    try{
-      const r = await gecode(q);
-      tempPoint = { lat:r.lat, lng:r.lng, display:r.display };
-      L.marker([r.lat, r.lng]).addTo(map).bindPopup('Point temporaire').openPopup();
-      map.panTo([r.lat, r.lng]);
-    }catch(e){ alert(e.message); }
-  });
-
-  document.getElementById('clearForm').addEventListener('click', ()=>{
-    document.getElementById('inputLastName').value = '';
-    document.getElementById('inputFirstName').value = '';
-    document.getElementById('inputPhone').value = '';
-    document.getElementById('inputLocation').value = '';
-    document.getElementById('inputNote').value = '';
-    document.getElementById('consentChk').checked = false;
-    document.getElementById('dropPoint').value = '';
-    tempPoint = null;
-  });
-
-  document.getElementById('submitAnon').addEventListener('click', async ()=>{
-    const last = document.getElementById('inputLastName').value.trim();
-    const first = document.getElementById('inputFirstName').value.trim();
-    const phone = document.getElementById('inputPhone').value.trim();
-    const addr = document.getElementById('inputLocation').value.trim();
-    const note = document.getElementById('inputNote').value.trim();
-    const consent = document.getElementById('consentChk').checked;
-    const drop = document.getElementById('dropPoint').value;
-
-    if(!last || !first) return alert('Nom et prénom obligatoires.');
-    if(!phone) return alert('Téléphone obligatoire.');
-    if(!consent) return alert('Consentement requis.');
-    if(!addr && !tempPoint && !drop) return alert('Adresse, point ou dépose obligatoire.');
-
-    if(addr && !tempPoint){
+    document.getElementById("geocodeBtn").addEventListener("click", async ()=>{
+      const q = document.getElementById("inputLocation").value.trim();
+      if(!q) return alert("Tape une adresse.");
       try{
+        const r = await geocode(q);
+        tempPoint = { lat:r.lat, lng:r.lng, display:r.display };
+        L.marker([r.lat,r.lng]).addTo(map).bindPopup("Point choisi").openPopup();
+        map.panTo([r.lat,r.lng]);
+      }catch(e){ alert(e.message); }
+    });
+
+    // CLEAR FORM
+    document.getElementById("clearForm").addEventListener("click", ()=>{
+      document.getElementById("inputLastName").value="";
+      document.getElementById("inputFirstName").value="";
+      document.getElementById("inputPhone").value="";
+      document.getElementById("inputLocation").value="";
+      document.getElementById("inputNote").value="";
+      document.getElementById("dropPoint").value="";
+      document.getElementById("consentChk").checked=false;
+      tempPoint=null;
+    });
+
+    // SUBMIT
+    document.getElementById("submitAnon").addEventListener("click", async ()=>{
+      const last = inputLastName.value.trim();
+      const first = inputFirstName.value.trim();
+      const phone = inputPhone.value.trim();
+      const addr = inputLocation.value.trim();
+      const note = inputNote.value.trim();
+      const drop = dropPoint.value;
+      const consent = consentChk.checked;
+
+      if(!last || !first) return alert("Nom + prénom obligatoires.");
+      if(!phone) return alert("Téléphone obligatoire.");
+      if(!consent) return alert("Consentement requis.");
+      if(!addr && !tempPoint && !drop) return alert("Adresse, point ou lieu obligatoire.");
+
+      if(addr && !tempPoint){
         const r = await geocode(addr);
         tempPoint = { lat:r.lat, lng:r.lng, display:r.display };
-      }catch(e){ return alert("Adresse invalide"); }
-    }
+      }
 
-    await addDoc(collection(db,'ramassage'), {
-      createdAt: new Date().toISOString(),
-      lastName: last,
-      firstName: first,
-      phone: phone,
-      note: note || null,
-      lat: tempPoint ? tempPoint.lat : null,
-      lng: tempPoint ? tempPoint.lng : null,
-      display: tempPoint ? tempPoint.display : addr || null,
-      dropPoint: drop || null,
-      venue: 'Mareuil-lès-Meaux'
+      await addDoc(collection(db, "ramassage"), {
+        createdAt: new Date().toISOString(),
+        lastName:last,
+        firstName:first,
+        phone:phone,
+        note:note,
+        lat: tempPoint?.lat || null,
+        lng: tempPoint?.lng || null,
+        display: tempPoint?.display || addr,
+        dropPoint: drop,
+        venue:"Mareuil-lès-Meaux"
+      });
+
+      alert("Demande enregistrée !");
+      tempPoint = null;
     });
 
-    alert('Soumission enregistrée. Merci !');
-    tempPoint = null;
-  });
+    // AUTH
+    adminSignIn.addEventListener("click", ()=>{
+      const email = adminEmail.value.trim();
+      const pass = adminPass.value.trim();
+      signInWithEmailAndPassword(auth, email, pass)
+        .then(()=> alert("Connexion réussie"))
+        .catch(e=> alert("Erreur: "+e.message));
+    });
 
-  document.getElementById('adminSignIn').addEventListener('click', ()=>{
-    const email = document.getElementById('adminEmail').value.trim();
-    const pass = document.getElementById('adminPass').value.trim();
-    signInWithEmailAndPassword(auth, email, pass)
-      .then(()=> alert('Connexion réussie'))
-      .catch(e=> alert('Erreur: '+e.message));
-  });
+    adminSignOut.addEventListener("click", ()=> signOut(auth));
 
-  document.getElementById('adminSignOut').addEventListener('click', ()=> signOut(auth));
+    onAuthStateChanged(auth, user=>{
+      adminPanelShort.classList.toggle("hidden", !user);
+      authBlock.classList.toggle("hidden", !!user);
+    });
 
-  onAuthStateChanged(auth, user=>{
-    const adminPanel = document.getElementById('adminPanelShort');
-    const authBlock = document.getElementById('authBlock');
-    if(user){
-      adminPanel.classList.remove('hidden');
-      authBlock.classList.add('hidden');
-    } else {
-      adminPanel.classList.add('hidden');
-      authBlock.classList.remove('hidden');
-    }
-  });
+    // OPEN TABLE
+    openAdminFull.addEventListener("click", ()=>{
+      const q = query(collection(db,"ramassage"), orderBy("createdAt","asc"));
+      getDocs(q).then(snap=>{
+        const rows=[];
+        markersLayer.clearLayers();
+        let total=0, n=0;
 
-  document.getElementById('openAdminFull').addEventListener('click', ()=>{
-    const q = query(collection(db,'ramassage'), orderBy('createdAt','asc'));
-    getDocs(q).then(snap=>{
-      const rows=[];
-      markersLayer.clearLayers();
-      let totalDist=0,count=0;
+        snap.forEach(doc=>{
+          const d=doc.data();
+          rows.push(d);
 
-      snap.forEach(doc=>{
-        const d=doc.data();
-        rows.push(d);
-        if(d.lat && d.lng){
-          const dist = haversine({lat:d.lat,lng:d.lng}, mareuil);
-          totalDist+=dist; count++;
-          L.marker([d.lat,d.lng]).addTo(markersLayer).bindPopup(
-            `<b>${d.firstName} ${d.lastName}</b><br>${d.display}<br>${dist.toFixed(1)} km`
+          if(d.lat && d.lng){
+            const dist = haversine({lat:d.lat,lng:d.lng}, mareuil);
+            total+=dist; n++;
+
+            L.marker([d.lat,d.lng]).addTo(markersLayer)
+              .bindPopup(`${d.firstName} ${d.lastName}<br>${d.display}<br>${dist.toFixed(1)} km`);
+          }
+        });
+
+        const avg = n ? (total/n).toFixed(1) : "0";
+        const win = window.open("", "_blank");
+
+        win.document.write(`<h2>Tableau Ramassage</h2>
+          <p>Total: ${rows.length} — Distance moyenne : ${avg} km</p>
+          <table border=1 cellpadding=6>
+            <tr><th>#</th><th>Date</th><th>Nom</th><th>Prénom</th><th>Tel</th><th>Adresse</th><th>Dépose</th><th>Note</th></tr>
+        `);
+
+        rows.forEach((r,i)=>{
+          win.document.write(
+            `<tr>
+              <td>${i+1}</td>
+              <td>${r.createdAt}</td>
+              <td>${r.lastName}</td>
+              <td>${r.firstName}</td>
+              <td>${r.phone}</td>
+              <td>${r.display||""}</td>
+              <td>${r.dropPoint||""}</td>
+              <td>${r.note||""}</td>
+            </tr>`
           );
-        }
-      });
+        });
 
-      const avg = count ? (totalDist/count).toFixed(1) : "0";
-      const win = window.open("","_blank");
-      win.document.write(`<h2>Tableau Ramassage</h2><p>Total: ${rows.length}<br>Moyenne: ${avg} km</p>`);
-      win.document.write('<table border=1 cellpadding=6><tr><th>#</th><th>date</th><th>nom</th><th>prénom</th><th>tel</th><th>display</th><th>dropPoint</th><th>note</th></tr>');
-      rows.forEach((r,i)=>{
-        win.document.write(`<tr><td>${i+1}</td><td>${r.createdAt}</td><td>${r.lastName}</td><td>${r.firstName}</td><td>${r.phone}</td><td>${r.display}</td><td>${r.dropPoint||''}</td><td>${r.note||''}</td></tr>`);
+        win.document.write("</table>");
       });
-      win.document.write('</table>');
     });
-  });
 
-  document.getElementById('exportCsvAdmin').addEventListener('click', ()=>{
-    const q = query(collection(db,'ramassage'), orderBy('createdAt','asc'));
+    // EXPORT CSV
+    exportCsvAdmin.addEventListener("click", ()=>{
+      const q=query(collection(db,"ramassage"), orderBy("createdAt","asc"));
+      getDocs(q).then(snap=>{
+        const rows=[["createdAt","lastName","firstName","phone","display","dropPoint","note","lat","lng"]];
+        snap.forEach(doc=>{
+          const d=doc.data();
+          rows.push([
+            d.createdAt,d.lastName,d.firstName,d.phone,
+            d.display,d.dropPoint,d.note,d.lat,d.lng
+          ]);
+        });
 
-    getDocs(q).then(snap=>{
-      const rows=[["createdAt","lastName","firstName","phone","display","dropPoint","note","lat","lng"]];
-      snap.forEach(doc=>{
-        const d=doc.data();
-        rows.push([d.createdAt||"",d.lastName||"",d.firstName||"",d.phone||"",d.display||"",d.dropPoint||"",d.note||"",d.lat||"",d.lng||""]);
+        const csv = rows.map(r=>r.join(",")).join("\n");
+        const blob=new Blob([csv],{type:"text/csv"});
+        const a=document.createElement("a");
+        a.href=URL.createObjectURL(blob);
+        a.download="ramassage.csv";
+        a.click();
       });
-
-      const csv=rows.map(r=>r.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n');
-      const blob=new Blob([csv],{type:"text/csv;charset=utf-8;"});
-      const a=document.createElement("a");
-      a.href=URL.createObjectURL(blob);
-      a.download="ramassage.csv";
-      a.click();
     });
-  });
+
   </script>
-
 </body>
 </html>
