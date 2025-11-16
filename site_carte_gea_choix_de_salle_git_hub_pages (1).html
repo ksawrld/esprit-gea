@@ -1,11 +1,11 @@
 <!doctype html>
 <html lang="fr">
-
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Taxi'GEA • Passage</title>
 
+  <!-- LEAFLET -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
 
   <style>
@@ -18,417 +18,340 @@
       --muted: #d0dcff;
       --border: #233062;
     }
+    * { box-sizing: border-box; }
+    html,body { height:100%; margin:0; font-family: Inter, system-ui, Arial; background:var(--bg); color:var(--text); }
+    header { padding:12px 16px; display:flex; align-items:center; gap:12px; background:var(--panel); border-bottom:1px solid var(--border); }
+    header img { height:48px; width:48px; border-radius:50%; object-fit:cover; }
+    .layout { display:grid; grid-template-columns:380px 1fr; height:calc(100vh - 70px); }
+    @media (max-width:980px){ .layout{ grid-template-columns:1fr; height:auto } #map{ height:70vh } }
+    aside{ padding:16px; background:var(--panel); border-right:1px solid var(--border); overflow:auto; }
+    #map{ width:100%; height:calc(100vh - 70px); background:#07102a; }
 
-    * {
-      box-sizing: border-box;
-    }
+    input, select, textarea, button { font-size:14px; border:none; outline:none; }
+    input, select, textarea { width:100%; padding:10px 12px; margin-top:6px; border-radius:10px; background:#12204f; color:#fff; }
+    textarea { min-height:80px; resize:vertical; }
 
-    html,
-    body {
-      height: 100%;
-      margin: 0;
-      font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, Arial;
-      color: var(--text);
-      background: var(--bg);
-    }
+    .btn{ padding:10px 12px; border-radius:10px; background:#24388d; color:#fff; cursor:pointer; border:1px solid #3148a6; }
+    .btn.primary{ background:var(--accent-2); border-color:#2563eb; }
 
-    header {
-      padding: 12px 16px;
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      border-bottom: 1px solid var(--border);
-      background: var(--panel);
-    }
-
-    header img {
-      height: 48px;
-      width: 48px;
-      border-radius: 50%;
-      object-fit: cover;
-    }
-
-    header h1 {
-      font-size: 18px;
-      margin: 0;
-      font-weight: 600;
-    }
-
-    .layout {
-      display: grid;
-      grid-template-columns: 380px 1fr;
-      height: calc(100vh - 70px);
-    }
-
-    @media (max-width:980px) {
-      .layout {
-        grid-template-columns: 1fr;
-        grid-auto-rows: auto 1fr;
-        height: auto
-      }
-
-      #map {
-        height: 70vh
-      }
-    }
-
-    aside {
-      padding: 16px;
-      background: var(--panel);
-      border-right: 1px solid var(--border);
-      overflow: auto;
-    }
-
-    #map {
-      width: 100%;
-      height: calc(100vh - 70px);
-      background: #07102a;
-    }
-
-    input,
-    select,
-    textarea,
-    button {
-      font-size: 14px;
-      border: none;
-      outline: none;
-    }
-
-    input,
-    select,
-    textarea {
-      width: 100%;
-      padding: 10px 12px;
-      margin-top: 6px;
-      border-radius: 10px;
-      background: #12204f;
-      color: #fff;
-    }
-
-    textarea {
-      min-height: 80px;
-      resize: vertical;
-    }
-
-    .btn {
-      padding: 10px 12px;
-      border-radius: 10px;
-      background: #24388d;
-      color: #fff;
-      cursor: pointer;
-      border: 1px solid #3148a6;
-    }
-
-    .btn.primary {
-      background: var(--accent-2);
-      border-color: #2563eb;
-    }
-
-    .card {
-      background: #0f1a4a;
-      border: 1px solid var(--border);
-      padding: 14px;
-      border-radius: 12px;
-      box-shadow: 0 6px 16px rgba(0, 0, 0, .25);
-    }
-
-    .stack {
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-    }
-
-    .muted {
-      color: var(--muted);
-      font-size: 13px;
-    }
-
-    label.muted {
-      color: var(--muted);
-      font-size: 13px;
-      display: block;
-      margin-top: 8px;
-    }
-
-    .hidden {
-      display: none;
-    }
-
-    .small {
-      font-size: 13px;
-      color: var(--muted);
-    }
-
-    /* 🔥 FIX: FORCER l'affichage des inputs admin */
-    #authBlock input {
-      display: block !important;
-      background: #12204f !important;
-      color: white !important;
-    }
+    .card{ background:#0f1a4a; border:1px solid var(--border); padding:14px; border-radius:12px; }
+    .stack{ display:flex; flex-direction:column; gap:12px; }
+    .muted{ color:var(--muted); font-size:13px; }
+    .hidden{ display:none; }
   </style>
 </head>
 
 <body>
 
-  <header>
-    <img src="logo.png" alt="Logo" onerror="this.style.display='none'">
-    <h1>ESPRIT GEA • Taxi'GEA</h1>
-  </header>
+<header>
+  <img src="logo.png" onerror="this.style.display='none'">
+  <h1>ESPRIT GEA • Taxi'GEA</h1>
+</header>
 
-  <div class="layout">
-    <aside>
-      <div class="stack">
+<div class="layout">
+  <aside>
+    <div class="stack">
 
-        <!-- FORMULAIRE -->
-        <div class="card">
-          <h2>Soumettre pour passage</h2>
+      <!-- FORMULAIRE -->
+      <div class="card">
+        <h2>Soumettre pour passage</h2>
 
-          <label class="muted">Nom</label>
-          <input id="inputLastName" placeholder="Ex: Dupont" />
+        <label class="muted">Nom</label>
+        <input id="inputLastName" />
 
-          <label class="muted">Prénom</label>
-          <input id="inputFirstName" placeholder="Ex: Lucas" />
+        <label class="muted">Prénom</label>
+        <input id="inputFirstName" />
 
-          <label class="muted">Téléphone</label>
-          <input id="inputPhone" placeholder="Ex: +33 6 12 34 56 78" />
+        <label class="muted">Téléphone</label>
+        <input id="inputPhone" placeholder="+33 …" />
 
-          <label class="muted">Adresse (ou laisse vide)</label>
-          <input id="inputLocation" placeholder="Ex: 10 rue Exemple, Meaux" />
+        <label class="muted">Adresse (ou place un point)</label>
+        <input id="inputLocation" />
 
-          <div style="display:flex;gap:8px;margin-top:8px">
-            <button class="btn" id="geocodeBtn">Géocoder</button>
-            <button class="btn" id="placeOnMapBtn">Placer un point</button>
-          </div>
-
-          <label class="muted">Point de ramassage (facultatif)</label>
-          <select id="dropPoint">
-            <option value="">Choisir un point</option>
-            <option value="Gare de Meaux">Gare de Meaux</option>
-            <option value="Campus IUT Meaux">Campus IUT Meaux</option>
-            <option value="Centre de Mareuil">Centre de Mareuil</option>
-            <option value="Autre">Autre</option>
-          </select>
-
-          <label class="muted">Remarque</label>
-          <textarea id="inputNote" placeholder="Ex: côté parking"></textarea>
-
-          <label><input type="checkbox" id="consentChk" /> <span class="small">J'accepte d'être contacté.</span></label>
-
-          <div style="display:flex;gap:8px;margin-top:10px">
-            <button class="btn primary" id="submitAnon">Envoyer</button>
-            <button class="btn" id="clearForm">Effacer</button>
-          </div>
+        <div style="display:flex;gap:8px;margin-top:8px">
+          <button class="btn" id="geocodeBtn">Géocoder</button>
+          <button class="btn" id="placeOnMapBtn">Point sur carte</button>
         </div>
 
-        <!-- LOGIN ADMIN -->
-        <div class="card">
-          <h2>Accès admin</h2>
-          <div id="authBlock">
-            <label class="muted">Email</label>
-            <input id="adminEmail" placeholder="admin email" />
+        <label class="muted" style="margin-top:8px">Point de ramassage</label>
+        <select id="dropPoint">
+          <option value="">Choisir un point</option>
+          <option>Gare de Meaux</option>
+          <option>Campus IUT Meaux</option>
+          <option>Centre de Mareuil</option>
+          <option>Autre</option>
+        </select>
 
-            <label class="muted">Mot de passe</label>
-            <input id="adminPass" type="password" placeholder="mot de passe" />
+        <label class="muted">Remarque</label>
+        <textarea id="inputNote"></textarea>
 
-            <div style="display:flex;gap:8px;margin-top:8px">
-              <button class="btn primary" id="adminSignIn">Connexion</button>
-              <button class="btn" id="adminSignOut">Déconnexion</button>
-            </div>
-          </div>
+        <label style="margin-top:8px">
+          <input type="checkbox" id="consentChk" />  
+          J'accepte d’être contacté.
+        </label>
+
+        <div style="display:flex;gap:8px;margin-top:10px">
+          <button class="btn primary" id="submitAnon">Envoyer</button>
+          <button class="btn" id="clearForm">Effacer</button>
         </div>
-
-        <!-- PANNEAU ADMIN -->
-        <div class="card hidden" id="adminPanelShort">
-          <h2>Panneau Admin</h2>
-          <div class="muted">Connecté ✔️</div>
-
-          <div style="display:flex;gap:8px;margin-top:8px">
-            <button class="btn" id="openAdminFull">Voir les demandes</button>
-            <button class="btn" id="exportCsvAdmin">Exporter CSV</button>
-          </div>
-        </div>
-
       </div>
-    </aside>
 
-    <main>
-      <div id="map"></div>
-    </main>
-  </div>
+      <!-- AUTH -->
+      <div class="card">
+        <h2>Accès admin</h2>
+        <div id="authBlock">
+          <label class="muted">Email admin</label>
+          <input id="adminEmail" />
 
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+          <label class="muted">Mot de passe</label>
+          <input id="adminPass" type="password" />
 
-  <!-- TON SCRIPT FIREBASE / MAP / ADMIN -->
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
-    import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
-    import { getFirestore, collection, addDoc, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+          <div style="display:flex;gap:8px;margin-top:8px">
+            <button class="btn primary" id="adminSignIn">Connexion</button>
+            <button class="btn" id="adminSignOut">Déconnexion</button>
+          </div>
+        </div>
+      </div>
 
-    // Firebase config
-    const firebaseConfig = {
-      apiKey: "AIzaSyBRlEU_av-QMbB6GBCOJXSZqEps0MxOWeQ",
-      authDomain: "soireeespritgea.firebaseapp.com",
-      projectId: "soireeespritgea",
-      storageBucket: "soireeespritgea.firebasestorage.app",
-      messagingSenderId: "155827688313",
-      appId: "1:155827688313:web:132270277d7b12128895a8",
-      measurementId: "G-7SZK8KMG3Q"
-    };
+      <!-- PANEL ADMIN -->
+      <div class="card hidden" id="adminPanelShort">
+        <h2>Panneau Admin</h2>
+        <div class="muted">Connecté avec succès.</div>
 
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const db = getFirestore(app);
+        <div style="display:flex;gap:8px;margin-top:8px">
+          <button class="btn" id="openAdminFull">Voir les demandes</button>
+          <button class="btn" id="exportCsvAdmin">Exporter CSV</button>
+        </div>
+      </div>
 
-    // MAP INIT
-    const map = L.map("map").setView([48.956, 2.888], 10);
-    L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", { maxZoom: 19 }).addTo(map);
-    setTimeout(() => map.invalidateSize(), 300);
+    </div>
+  </aside>
 
-    const mareuil = { lat: 48.956, lng: 2.888 };
-    let tempPoint = null;
+  <main>
+    <div id="map"></div>
+  </main>
+</div>
 
-    // GEOCODAGE
-    async function geocode(q) {
-      const url = new URL("https://nominatim.openstreetmap.org/search");
-      url.searchParams.set("q", q);
-      url.searchParams.set("format", "jsonv2");
-      url.searchParams.set("limit", "1");
-      url.searchParams.set("countrycodes", "fr");
-      const r = await fetch(url);
-      const j = await r.json();
-      if (!j.length) throw new Error("Adresse introuvable");
-      return { lat: +j[0].lat, lng: +j[0].lon, display: j[0].display_name };
+<!-- LEAFLET -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+
+<!-- FIREBASE + LOGIQUE -->
+<script type="module">
+/* =========================== */
+/* ======== FIREBASE ========= */
+/* =========================== */
+import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
+import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
+import { getFirestore, collection, addDoc, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyBRlEU_av-QMbB6GBCOJXSZqEps0MxOWeQ",
+  authDomain: "soireeespritgea.firebaseapp.com",
+  projectId: "soireeespritgea",
+  storageBucket: "soireeespritgea.firebasestorage.app",
+  messagingSenderId: "155827688313",
+  appId: "1:155827688313:web:132270277d7b12128895a8",
+  measurementId: "G-7SZK8KMG3Q"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+/* =========================== */
+/* ========== MAP ============ */
+/* =========================== */
+
+const map = L.map("map").setView([48.956, 2.888], 10);
+L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", { maxZoom: 19 }).addTo(map);
+
+setTimeout(() => map.invalidateSize(), 400);
+
+const mareuil = { lat: 48.956, lng: 2.888 };
+const markersLayer = L.layerGroup().addTo(map);
+
+const haversine = (a, b) => {
+  const R = 6371;
+  const dLat = (b.lat - a.lat) * Math.PI / 180;
+  const dLng = (b.lng - a.lng) * Math.PI / 180;
+  const sa = Math.sin(dLat/2)**2 + Math.cos(a.lat*Math.PI/180)*Math.cos(b.lat*Math.PI/180)*Math.sin(dLng/2)**2;
+  return 2 * R * Math.asin(Math.sqrt(sa));
+};
+
+let tempPoint = null;
+
+/* =========================== */
+/* ======== GEOCODAGE ======== */
+/* =========================== */
+
+async function geocode(q) {
+  const url = new URL("https://nominatim.openstreetmap.org/search");
+  url.searchParams.set("q", q);
+  url.searchParams.set("format", "jsonv2");
+  url.searchParams.set("limit", "1");
+  url.searchParams.set("countrycodes", "fr");
+
+  const r = await fetch(url);
+  const j = await r.json();
+  if (!j.length) throw new Error("Adresse introuvable");
+  return { lat: +j[0].lat, lng: +j[0].lon, display: j[0].display_name };
+}
+
+document.getElementById("placeOnMapBtn").addEventListener("click", () => {
+  alert("Clique sur la carte pour placer un point.");
+  map.once("click", e => {
+    tempPoint = e.latlng;
+    L.marker(tempPoint).addTo(map).bindPopup("Point ajouté").openPopup();
+  });
+});
+
+document.getElementById("geocodeBtn").addEventListener("click", async () => {
+  const q = document.getElementById("inputLocation").value.trim();
+  if (!q) return alert("Entre une adresse.");
+
+  try {
+    const r = await geocode(q);
+    tempPoint = { lat: r.lat, lng: r.lng, display: r.display };
+    L.marker([r.lat, r.lng]).addTo(map).bindPopup("Point ajouté").openPopup();
+    map.panTo([r.lat, r.lng]);
+  } catch (e) {
+    alert(e.message);
+  }
+});
+
+/* =========================== */
+/* ======== SUBMISSION ======= */
+/* =========================== */
+
+document.getElementById("submitAnon").addEventListener("click", async () => {
+  const last = inputLastName.value.trim();
+  const first = inputFirstName.value.trim();
+  const phone = inputPhone.value.trim();
+  const addr = inputLocation.value.trim();
+  const note = inputNote.value.trim();
+  const drop = dropPoint.value;
+  const consent = consentChk.checked;
+
+  if (!last || !first) return alert("Nom + prénom requis.");
+  if (!phone) return alert("Téléphone requis.");
+  if (!consent) return alert("Check le consentement.");
+  if (!addr && !tempPoint && !drop) return alert("Adresse, point ou drop obligatoire.");
+
+  if (addr && !tempPoint) {
+    try {
+      const r = await geocode(addr);
+      tempPoint = { lat: r.lat, lng: r.lng, display: r.display };
+    } catch {
+      return alert("Adresse invalide.");
     }
+  }
 
-    document.getElementById("geocodeBtn").addEventListener("click", async () => {
-      const q = document.getElementById("inputLocation").value.trim();
-      if (!q) return alert("Entre une adresse");
-      try {
-        const r = await geocode(q);
-        tempPoint = r;
-        L.marker([r.lat, r.lng]).addTo(map).bindPopup("Point ajouté").openPopup();
-        map.panTo([r.lat, r.lng]);
-      } catch (e) {
-        alert(e.message);
-      }
-    });
+  await addDoc(collection(db, "ramassage"), {
+    createdAt: new Date().toISOString(),
+    lastName: last,
+    firstName: first,
+    phone,
+    note,
+    lat: tempPoint?.lat || null,
+    lng: tempPoint?.lng || null,
+    display: tempPoint?.display || addr || null,
+    dropPoint: drop || null,
+    venue: "Mareuil-lès-Meaux"
+  });
 
-    // CLICK MAP
-    document.getElementById("placeOnMapBtn").addEventListener("click", () => {
-      alert("Clique sur la carte");
-      map.once("click", (e) => {
-        tempPoint = e.latlng;
-        L.marker(tempPoint).addTo(map).bindPopup("Point sélectionné").openPopup();
-      });
-    });
+  alert("Demande envoyée !");
+  tempPoint = null;
+});
 
-    // SUBMIT FORM
-    document.getElementById("submitAnon").addEventListener("click", async () => {
-      const last = inputLastName.value.trim();
-      const first = inputFirstName.value.trim();
-      const phone = inputPhone.value.trim();
-      const addr = inputLocation.value.trim();
-      const note = inputNote.value.trim();
-      const drop = dropPoint.value;
-      const consent = consentChk.checked;
+/* =========================== */
+/* ======== AUTH ADMIN ======= */
+/* =========================== */
 
-      if (!last || !first || !phone) return alert("Nom, prénom, téléphone requis.");
-      if (!tempPoint && !addr && !drop) return alert("Adresse ou point de carte requis.");
-      if (!consent) return alert("Consentement requis.");
+adminSignIn.addEventListener("click", () => {
+  signInWithEmailAndPassword(auth, adminEmail.value.trim(), adminPass.value.trim())
+    .then(() => alert("Connecté !"))
+    .catch(e => alert("Erreur : " + e.message));
+});
 
-      if (addr && !tempPoint) {
-        try {
-          tempPoint = await geocode(addr);
-        } catch (e) {
-          return alert("Adresse invalide.");
-        }
-      }
+adminSignOut.addEventListener("click", () => signOut(auth));
 
-      await addDoc(collection(db, "ramassage"), {
-        createdAt: new Date().toISOString(),
-        lastName: last,
-        firstName: first,
-        phone,
-        note,
-        lat: tempPoint.lat,
-        lng: tempPoint.lng,
-        display: tempPoint.display || addr,
-        dropPoint: drop || null
-      });
+onAuthStateChanged(auth, user => {
+  if (user) {
+    adminPanelShort.classList.remove("hidden");
+    authBlock.classList.add("hidden");
+  } else {
+    adminPanelShort.classList.add("hidden");
+    authBlock.classList.remove("hidden");
+  }
+});
 
-      alert("Demande envoyée ✔️");
-      tempPoint = null;
-    });
+/* =========================== */
+/* ====== ADMIN TABLEAU ====== */
+/* =========================== */
 
-    // AUTH
-    adminSignIn.addEventListener("click", () => {
-      const email = adminEmail.value.trim();
-      const pass = adminPass.value.trim();
-      signInWithEmailAndPassword(auth, email, pass)
-        .then(() => alert("Connecté ✔️"))
-        .catch((e) => alert("Erreur : " + e.message));
-    });
+document.getElementById("openAdminFull").addEventListener("click", async () => {
+  const snap = await getDocs(query(collection(db, "ramassage"), orderBy("createdAt", "asc")));
 
-    adminSignOut.addEventListener("click", () => signOut(auth));
+  if (snap.empty) return alert("Aucune demande.");
 
-    onAuthStateChanged(auth, (user) => {
-      if (user) {
-        adminPanelShort.classList.remove("hidden");
-        authBlock.classList.add("hidden");
-      } else {
-        adminPanelShort.classList.add("hidden");
-        authBlock.classList.remove("hidden");
-      }
-    });
+  const win = window.open("", "_blank");
+  if (!win) return alert("Active les popups.");
 
-    // ADMIN TABLE
-    openAdminFull.addEventListener("click", async () => {
-      const snap = await getDocs(query(collection(db, "ramassage"), orderBy("createdAt", "asc")));
-      const rows = [];
-      snap.forEach((d) => rows.push(d.data()));
+  let html = `
+    <h2>Demandes Taxi'GEA</h2>
+    <p>Total : ${snap.size}</p>
+    <table border=1 cellpadding=6>
+      <tr>
+        <th>#</th><th>Date</th><th>Nom</th><th>Prénom</th>
+        <th>Tel</th><th>Adresse</th><th>Dépose</th><th>Note</th>
+      </tr>
+  `;
 
-      const win = window.open("", "_blank");
-      win.document.write("<h2>Tableau Ramassage</h2>");
-      win.document.write(`<p>Total : ${rows.length}</p>`);
-      win.document.write("<table border=1 cellpadding=6>");
+  let i = 1;
+  snap.forEach(doc => {
+    const d = doc.data();
+    html += `
+      <tr>
+        <td>${i++}</td>
+        <td>${d.createdAt}</td>
+        <td>${d.lastName}</td>
+        <td>${d.firstName}</td>
+        <td>${d.phone}</td>
+        <td>${d.display || ""}</td>
+        <td>${d.dropPoint || ""}</td>
+        <td>${d.note || ""}</td>
+      </tr>
+    `;
+  });
 
-      rows.forEach((r, i) => {
-        win.document.write(`
-          <tr>
-            <td>${i + 1}</td>
-            <td>${r.createdAt}</td>
-            <td>${r.lastName}</td>
-            <td>${r.firstName}</td>
-            <td>${r.phone}</td>
-            <td>${r.display}</td>
-            <td>${r.dropPoint || ""}</td>
-            <td>${r.note || ""}</td>
-          </tr>
-        `);
-      });
+  html += "</table>";
 
-      win.document.write("</table>");
-    });
+  win.document.write(html);
+});
 
-    // EXPORT CSV
-    exportCsvAdmin.addEventListener("click", async () => {
-      const snap = await getDocs(query(collection(db, "ramassage"), orderBy("createdAt", "asc")));
-      const rows = [["createdAt", "lastName", "firstName", "phone", "display", "dropPoint", "note", "lat", "lng"]];
+/* =========================== */
+/* ====== EXPORT CSV ========= */
+/* =========================== */
 
-      snap.forEach((doc) => {
-        const d = doc.data();
-        rows.push([d.createdAt, d.lastName, d.firstName, d.phone, d.display, d.dropPoint, d.note, d.lat, d.lng]);
-      });
+document.getElementById("exportCsvAdmin").addEventListener("click", async () => {
+  const snap = await getDocs(query(collection(db, "ramassage"), orderBy("createdAt", "asc")));
 
-      const csv = rows.map((r) => r.join(",")).join("\n");
-      const a = document.createElement("a");
-      a.href = URL.createObjectURL(new Blob([csv], { type: "text/csv" }));
-      a.download = "ramassage.csv";
-      a.click();
-    });
+  if (snap.empty) return alert("Aucune donnée.");
 
-  </script>
+  const rows = [["createdAt","lastName","firstName","phone","display","dropPoint","note","lat","lng"]];
+  snap.forEach(doc => {
+    const d = doc.data();
+    rows.push([d.createdAt, d.lastName, d.firstName, d.phone, d.display, d.dropPoint, d.note, d.lat, d.lng]);
+  });
 
+  const csv = rows.map(r => r.join(",")).join("\n");
+  const blob = new Blob([csv], { type: "text/csv" });
+
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "ramassage.csv";
+  a.click();
+});
+</script>
 </body>
-
 </html>
