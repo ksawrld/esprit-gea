@@ -7,7 +7,7 @@
 
   <style>
     :root {
-      --primary:#2f7f6f;--secondary:#f4f4f4;--dark:#222;--light:#fff;--danger:#c0392b;
+      --primary:#d74d45;--secondary:#fdf2f2;--dark:#222;--light:#fff;--danger:#d74d45;
     }
     *{box-sizing:border-box;margin:0;padding:0}
     body{font-family:Arial,Helvetica,sans-serif;background:var(--secondary);color:var(--dark)}
@@ -94,8 +94,8 @@
 
 <footer>© 2025 – Encor’Utile | Démo jury</footer>
 
-<div id="modal" class="modal hidden">
-  <div class="modal-content">
+<div id="modal" class="modal hidden" onclick="closeModal()">
+  <div class="modal-content" onclick="event.stopPropagation()">
     <h3 id="modalTitle"></h3>
     <p id="modalDesc"></p>
     <p id="modalDistance"></p>
@@ -142,7 +142,7 @@
     document.getElementById('modal').classList.remove('hidden')
   }
 
-  function closeModal(){document.getElementById('modal').classList.add('hidden')}
+  function closeModal(){document.getElementById('modal').classList.add('hidden');}
 
   renderProducts();
 </script>
