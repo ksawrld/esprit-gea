@@ -100,7 +100,7 @@
     <p id="modalDesc"></p>
     <p id="modalDistance"></p>
     <p class="price" id="modalPrice"></p>
-    <button onclick="closeModal()">Fermer</button>
+    <button id="closeBtn">Fermer</button>
   </div>
 </div>
 
@@ -141,6 +141,8 @@
     document.getElementById('modalPrice').innerText=p.price;
     document.getElementById('modal').classList.remove('hidden')
   }
+
+  document.getElementById('closeBtn')?.addEventListener('click', closeModal);
 
   function closeModal(){document.getElementById('modal').classList.add('hidden');}
 
