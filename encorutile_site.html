@@ -1,153 +1,108 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Encor’Utile – Démo jury</title>
-
-  <style>
-    :root {
-      --primary:#d74d45;--secondary:#fdf2f2;--dark:#222;--light:#fff;--danger:#d74d45;
-    }
-    *{box-sizing:border-box;margin:0;padding:0}
-    body{font-family:Arial,Helvetica,sans-serif;background:var(--secondary);color:var(--dark)}
-
-    header{background:var(--primary);color:#fff;padding:1rem;display:flex;align-items:center;gap:1rem}
-    header img{height:45px}
-    header div{flex:1}
-    header small{color:#ffdddd;font-weight:bold}
-
-    nav{background:#fff;padding:1rem;display:flex;justify-content:center;gap:1.5rem;box-shadow:0 2px 4px rgba(0,0,0,.1)}
-    nav a{cursor:pointer;font-weight:bold}
-
-    section{max-width:1200px;margin:auto;padding:3rem 1rem}
-    h2{color:var(--primary);margin-bottom:1rem}
-
-    .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:1.5rem}
-
-    .card{background:#fff;border-radius:8px;overflow:hidden;box-shadow:0 4px 8px rgba(0,0,0,.08)}
-    .card img{width:100%;height:180px;object-fit:cover}
-    .card-content{padding:1rem}
-
-    .badge{background:var(--primary);color:#fff;font-size:.75rem;padding:.2rem .5rem;border-radius:4px;display:inline-block}
-    .price{font-weight:bold;color:var(--primary)}
-
-    button{margin-top:.8rem;width:100%;padding:.6rem;border:none;border-radius:4px;background:var(--primary);color:#fff;cursor:pointer}
-
-    .hidden{display:none}
-
-    .filters{display:flex;gap:1rem;margin-bottom:1.5rem;flex-wrap:wrap}
-
-    footer{background:#222;color:#fff;text-align:center;padding:2rem}
-
-    .modal{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.6);display:flex;justify-content:center;align-items:center}
-    .modal-content{background:#fff;padding:2rem;max-width:500px;border-radius:8px}
-    .range{margin-top:1rem}
-  </style>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Encor’Utile – Démo jury</title>
+<style>
+:root{--primary:#000;--secondary:#f5f5f5;--dark:#111;--light:#fff}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:Arial,Helvetica,sans-serif;background:var(--secondary);color:var(--dark)}
+header{background:var(--primary);color:#fff;padding:1rem;display:flex;align-items:center;gap:1rem}
+header img{height:45px}
+header small{color:#ffb3b3;font-weight:bold}
+nav{background:#fff;padding:1rem;display:flex;justify-content:center;gap:1.5rem;box-shadow:0 2px 4px rgba(0,0,0,.1)}
+nav a{cursor:pointer;font-weight:bold}
+section{max-width:1200px;margin:auto;padding:3rem 1rem}
+h2{margin-bottom:1rem}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:1.5rem}
+.card{background:#fff;border-radius:8px;overflow:hidden;box-shadow:0 4px 8px rgba(0,0,0,.08)}
+.card img{width:100%;height:180px;object-fit:cover}
+.card-content{padding:1rem}
+.badge{background:#000;color:#fff;font-size:.75rem;padding:.2rem .5rem;border-radius:4px;display:inline-block}
+.price{font-weight:bold}
+button{margin-top:.8rem;width:100%;padding:.6rem;border:none;border-radius:4px;background:#000;color:#fff;cursor:pointer}
+.hidden{display:none}
+.filters{display:flex;gap:1rem;margin-bottom:1.5rem;flex-wrap:wrap}
+footer{background:#111;color:#fff;text-align:center;padding:2rem}
+.modal{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.6);display:flex;justify-content:center;align-items:center;opacity:0;pointer-events:none;transition:opacity .3s ease}
+.modal.show{opacity:1;pointer-events:auto}
+.modal-content{background:#fff;padding:2rem;max-width:500px;border-radius:8px;animation:pop .3s ease}
+@keyframes pop{from{transform:scale(.9)}to{transform:scale(1)}}
+</style>
 </head>
 <body>
-
 <header>
-  <img src="logo.png" alt="Logo Encor'Utile">
-  <div>
-    <h1>Encor’Utile</h1>
-    <small>⚠️ Démo fonctionnelle – données fictives</small>
-  </div>
-</header>
-
-<nav>
-  <a onclick="showPage('home')">Accueil</a>
-  <a onclick="showPage('products')">Produits</a>
-  <a onclick="showPage('concept')">Concept</a>
-</nav>
-
-<section id="home">
-  <h2>Meubler et décorer sans gaspiller</h2>
-  <p>Produits neufs issus d’invendus, à prix réduits, récupérables près de chez vous.</p>
-</section>
-
-<section id="products" class="hidden">
-  <h2>Produits disponibles autour de Meaux</h2>
-
-  <div class="filters">
-    <select id="categoryFilter" onchange="renderProducts()">
-      <option value="all">Toutes catégories</option>
-      <option value="Ameublement">Ameublement</option>
-      <option value="Décoration">Décoration</option>
-    </select>
-
-    <button onclick="randomSurprise()">🎁 Produit surprise</button>
-
-    <div class="range">
-      Rayon de recherche : <span id="radiusValue">5</span> km
-      <input type="range" min="5" max="30" step="5" value="5" onchange="updateRadius(this.value)">
-    </div>
-  </div>
-
-  <div class="grid" id="productGrid"></div>
-</section>
-
-<section id="concept" class="hidden">
-  <h2>Le concept</h2>
-  <p>Deux offres : produit surprise à petit prix ou produit visible avec photo et description.</p>
-</section>
-
-<footer>© 2025 – Encor’Utile | Démo jury</footer>
-
-<div id="modal" class="modal hidden" onclick="closeModal()">
-  <div class="modal-content" onclick="event.stopPropagation()">
-    <h3 id="modalTitle"></h3>
-    <p id="modalDesc"></p>
-    <p id="modalDistance"></p>
-    <p class="price" id="modalPrice"></p>
-    <button id="closeBtn">Fermer</button>
-  </div>
+<img src="logo.png" alt="Logo Encor'Utile">
+<div>
+<h1>Encor’Utile</h1>
+<small>⚠️ Démo fonctionnelle – données fictives</small>
 </div>
-
+</header>
+<nav>
+<a onclick="showPage('home')">Accueil</a>
+<a onclick="showPage('products')">Produits</a>
+<a onclick="showPage('concept')">Concept</a>
+</nav>
+<section id="home">
+<h2>Meubler et décorer sans gaspiller</h2>
+<p>Produits neufs issus d’invendus, à prix réduits, récupérables près de chez vous.</p>
+</section>
+<section id="products" class="hidden">
+<h2>Produits disponibles autour de Meaux</h2>
+<div class="filters">
+<select id="categoryFilter" onchange="renderProducts()">
+<option value="all">Toutes catégories</option>
+<option value="Ameublement">Ameublement</option>
+<option value="Décoration">Décoration</option>
+</select>
+<button onclick="randomSurprise()">🎁 Produit surprise</button>
+<div>Rayon : <span id="radiusValue">5</span> km
+<input type="range" min="5" max="30" step="5" value="5" onchange="updateRadius(this.value)"></div>
+</div>
+<div class="grid" id="productGrid"></div>
+</section>
+<section id="concept" class="hidden">
+<h2>Le concept</h2>
+<p>Deux offres : produit surprise à petit prix ou produit visible avec photo et description.</p>
+</section>
+<footer>© 2025 – Encor’Utile | Démo jury</footer>
+<div id="modal" class="modal" onclick="closeModal()">
+<div class="modal-content" onclick="event.stopPropagation()">
+<h3 id="modalTitle"></h3>
+<p id="modalDesc"></p>
+<p id="modalDistance"></p>
+<p class="price" id="modalPrice"></p>
+<button onclick="confirmReservation()">Confirmer la réservation</button>
+<button onclick="closeModal()">Fermer</button>
+</div>
+</div>
+<div id="success" class="modal" onclick="closeSuccess()">
+<div class="modal-content" onclick="event.stopPropagation()">
+<h3>✅ Réservation confirmée</h3>
+<p>Votre produit est réservé. Merci de contribuer à la réduction du gaspillage.</p>
+<p><strong>Impact :</strong> <span id="impact"></span> kg d’objets sauvés</p>
+<button onclick="closeSuccess()">Retour aux produits</button>
+</div>
+</div>
 <script>
-  let radius = 5;
-
-  const products = [
-    {name:"Table basse scandinave",category:"Ameublement",price:"14 €",type:"Visible",distance:3,img:"https://images.unsplash.com/photo-1582582429416-41c8b0d28f1b"},
-    {name:"Miroir mural rond",category:"Décoration",price:"12 €",type:"Visible",distance:6,img:"https://images.unsplash.com/photo-1616628182506-9f9d9db6466b"},
-    {name:"Produit surprise – Décoration",category:"Décoration",price:"5 €",type:"Surprise",distance:4,img:"https://images.unsplash.com/photo-1524758631624-e2822e304c36"},
-    {name:"Produit surprise – Ameublement",category:"Ameublement",price:"5 €",type:"Surprise",distance:10,img:"https://images.unsplash.com/photo-1555041469-a586c61ea9bc"}
-  ];
-
-  function showPage(id){document.querySelectorAll('section').forEach(s=>s.classList.add('hidden'));document.getElementById(id).classList.remove('hidden')}
-
-  function updateRadius(val){radius=val;document.getElementById('radiusValue').innerText=val;renderProducts()}
-
-  function renderProducts(){
-    const cat=document.getElementById('categoryFilter').value;
-    const grid=document.getElementById('productGrid');grid.innerHTML='';
-    products.filter(p=>(cat==='all'||p.category===cat)&&p.distance<=radius).forEach(p=>{
-      const c=document.createElement('div');c.className='card';
-      c.innerHTML=`<img src="${p.img}"><div class="card-content"><span class="badge">${p.type}</span><h3>${p.name}</h3><p>${p.category}</p><p>${p.distance} km • Meaux</p><p class="price">${p.price}</p><button onclick='openModal(${JSON.stringify(p)})'>Réserver</button></div>`;
-      grid.appendChild(c);
-    })
-  }
-
-  function randomSurprise(){
-    const s=products.filter(p=>p.type==='Surprise'&&p.distance<=radius);
-    if(!s.length)return alert('Aucun produit surprise dans ce rayon');
-    openModal(s[Math.floor(Math.random()*s.length)])
-  }
-
-  function openModal(p){
-    document.getElementById('modalTitle').innerText=p.name;
-    document.getElementById('modalDesc').innerText=`Catégorie : ${p.category} | Offre : ${p.type}`;
-    document.getElementById('modalDistance').innerText=`Point de retrait à ${p.distance} km de Meaux`;
-    document.getElementById('modalPrice').innerText=p.price;
-    document.getElementById('modal').classList.remove('hidden')
-  }
-
-  document.getElementById('closeBtn')?.addEventListener('click', closeModal);
-
-  function closeModal(){document.getElementById('modal').classList.add('hidden');}
-
-  renderProducts();
+let radius=5,impactTotal=0;
+const products=[
+{name:"Table basse scandinave",category:"Ameublement",price:"14 €",type:"Visible",distance:3,img:"https://images.unsplash.com/photo-1555041469-a586c61ea9bc",impact:12},
+{name:"Miroir mural rond",category:"Décoration",price:"12 €",type:"Visible",distance:6,img:"https://images.unsplash.com/photo-1616628182506-9f9d9db6466b",impact:4},
+{name:"Produit surprise – Décoration",category:"Décoration",price:"5 €",type:"Surprise",distance:4,img:"https://images.unsplash.com/photo-1524758631624-e2822e304c36",impact:3},
+{name:"Produit surprise – Ameublement",category:"Ameublement",price:"5 €",type:"Surprise",distance:10,img:"https://images.unsplash.com/photo-1582582429416-41c8b0d28f1b",impact:10}
+];
+let currentProduct=null;
+function showPage(id){document.querySelectorAll('section').forEach(s=>s.classList.add('hidden'));document.getElementById(id).classList.remove('hidden')}
+function updateRadius(v){radius=v;document.getElementById('radiusValue').innerText=v;renderProducts()}
+function renderProducts(){const cat=document.getElementById('categoryFilter').value;const grid=document.getElementById('productGrid');grid.innerHTML='';products.filter(p=>(cat==='all'||p.category===cat)&&p.distance<=radius).forEach(p=>{const c=document.createElement('div');c.className='card';c.innerHTML=`<img src="${p.img}"><div class="card-content"><span class="badge">${p.type}</span><h3>${p.name}</h3><p>${p.category}</p><p>${p.distance} km • Meaux</p><p class="price">${p.price}</p><button onclick='openModal(${JSON.stringify(p)})'>Réserver</button></div>`;grid.appendChild(c)})}
+function randomSurprise(){const s=products.filter(p=>p.type==='Surprise'&&p.distance<=radius);if(!s.length)return alert('Aucun produit surprise');openModal(s[Math.floor(Math.random()*s.length)])}
+function openModal(p){currentProduct=p;document.getElementById('modalTitle').innerText=p.name;document.getElementById('modalDesc').innerText=`Catégorie : ${p.category} | Offre : ${p.type}`;document.getElementById('modalDistance').innerText=`Point de retrait à ${p.distance} km de Meaux`;document.getElementById('modalPrice').innerText=p.price;document.getElementById('modal').classList.add('show')}
+function closeModal(){document.getElementById('modal').classList.remove('show')}
+function confirmReservation(){impactTotal+=currentProduct.impact;document.getElementById('impact').innerText=impactTotal;closeModal();document.getElementById('success').classList.add('show')}
+function closeSuccess(){document.getElementById('success').classList.remove('show')}
+renderProducts();
 </script>
-
 </body>
 </html>
