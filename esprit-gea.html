@@ -1,0 +1,660 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Esprit GEA — Intranet BUT GEA</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Serif+Display&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --navy: #0a1f6e;
+    --navy-light: #1a3a9f;
+    --navy-dark: #050f3a;
+    --navy-faint: #e8f0fe;
+    --white: #ffffff;
+    --gray-bg: #f4f6fb;
+    --gray-border: #dde3f0;
+    --text: #1a1f36;
+    --text-muted: #5a6a8a;
+    --red: #e74c3c;
+    --green: #1a7a4a;
+    --accent: #3b7cf4;
+  }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--gray-bg);
+    color: var(--text);
+    min-height: 100vh;
+  }
+
+  /* ── NAV ── */
+  nav {
+    background: var(--navy-dark);
+    padding: 0 2rem;
+    display: flex;
+    align-items: center;
+    height: 60px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 2px 16px rgba(5,15,58,0.18);
+  }
+  .nav-brand { display: flex; align-items: center; gap: 12px; text-decoration: none; }
+  .nav-logo-wrap {
+    width: 38px; height: 38px;
+    border-radius: 50%;
+    background: white;
+    display: flex; align-items: center; justify-content: center;
+    overflow: hidden;
+    border: 2px solid rgba(255,255,255,0.2);
+  }
+  .nav-logo-wrap img { width: 36px; height: 36px; object-fit: cover; border-radius: 50%; }
+  .nav-logo-svg { width: 36px; height: 36px; }
+  .nav-title-text { font-size: 16px; font-weight: 600; color: white; letter-spacing: 0.2px; }
+  .nav-title-sub { font-size: 11px; color: rgba(255,255,255,0.5); letter-spacing: 0.5px; }
+  .nav-links { display: flex; margin-left: auto; gap: 2px; }
+  .nav-link {
+    background: none; border: none;
+    color: rgba(255,255,255,0.65); font-size: 13px; font-family: inherit;
+    padding: 0 16px; height: 60px; cursor: pointer;
+    border-bottom: 3px solid transparent;
+    transition: all 0.15s;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .nav-link:hover { color: white; background: rgba(255,255,255,0.06); }
+  .nav-link.active { color: white; border-bottom-color: #3b7cf4; }
+  .notif-dot {
+    background: var(--red); color: white;
+    font-size: 10px; font-weight: 600;
+    width: 17px; height: 17px; border-radius: 50%;
+    display: inline-flex; align-items: center; justify-content: center;
+  }
+
+  /* ── HERO ── */
+  .hero {
+    background: linear-gradient(135deg, var(--navy-dark) 0%, var(--navy) 60%, var(--navy-light) 100%);
+    padding: 2.5rem 2rem;
+    display: flex; align-items: center; gap: 2rem;
+    position: relative; overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.03'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+  }
+  .hero-logo-big {
+    width: 90px; height: 90px; border-radius: 50%;
+    background: white; overflow: hidden;
+    border: 3px solid rgba(255,255,255,0.25);
+    flex-shrink: 0; margin-left: auto;
+    display: flex; align-items: center; justify-content: center;
+    position: relative; z-index: 1;
+  }
+  .hero-logo-big img { width: 86px; height: 86px; object-fit: cover; border-radius: 50%; }
+  .hero-text { position: relative; z-index: 1; }
+  .hero-text h1 {
+    font-family: 'DM Serif Display', serif;
+    font-size: 28px; font-weight: 400;
+    color: white; margin-bottom: 8px;
+  }
+  .hero-text p { font-size: 14px; color: rgba(255,255,255,0.65); line-height: 1.6; max-width: 480px; }
+  .hero-stats { display: flex; gap: 1.5rem; margin-top: 1.2rem; }
+  .hero-stat { text-align: center; }
+  .hero-stat-num { font-size: 20px; font-weight: 600; color: white; }
+  .hero-stat-label { font-size: 11px; color: rgba(255,255,255,0.5); text-transform: uppercase; letter-spacing: 0.5px; }
+
+  /* ── LAYOUT ── */
+  .layout { max-width: 900px; margin: 0 auto; padding: 1.5rem 1rem; }
+
+  /* ── TABS ── */
+  .tabs-bar {
+    display: flex; gap: 6px; margin-bottom: 1.5rem;
+    background: white; border-radius: 12px;
+    padding: 6px; border: 1px solid var(--gray-border);
+  }
+  .tab {
+    flex: 1; background: none; border: none;
+    font-size: 13px; font-weight: 500; font-family: inherit;
+    padding: 9px 12px; border-radius: 8px; cursor: pointer;
+    color: var(--text-muted); transition: all 0.15s;
+  }
+  .tab.active { background: var(--navy); color: white; }
+  .tab:hover:not(.active) { background: var(--gray-bg); color: var(--navy); }
+
+  /* ── SECTION ── */
+  .section { display: none; }
+  .section.visible { display: block; }
+
+  /* ── POST FORM ── */
+  .post-form {
+    background: white; border: 1px solid var(--gray-border);
+    border-radius: 14px; padding: 1.25rem;
+    margin-bottom: 1.25rem;
+    box-shadow: 0 2px 8px rgba(10,31,110,0.04);
+  }
+  .post-form-top { display: flex; gap: 12px; align-items: flex-start; margin-bottom: 12px; }
+  .form-avatar {
+    width: 38px; height: 38px; border-radius: 50%;
+    background: var(--navy); color: white;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px; font-weight: 600; flex-shrink: 0;
+  }
+  .post-form textarea {
+    flex: 1; border: 1px solid var(--gray-border); border-radius: 10px;
+    padding: 10px 14px; font-size: 14px; font-family: inherit;
+    resize: none; min-height: 80px; outline: none;
+    background: var(--gray-bg); color: var(--text);
+    transition: border 0.15s, background 0.15s;
+    line-height: 1.6;
+  }
+  .post-form textarea:focus { border-color: var(--accent); background: white; }
+  .post-form-footer { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+  .tags-row { display: flex; gap: 6px; flex-wrap: wrap; }
+  .tag-pill {
+    background: none; border: 1px solid var(--gray-border);
+    border-radius: 20px; padding: 5px 14px; font-size: 12px;
+    font-family: inherit; cursor: pointer; color: var(--text-muted);
+    transition: all 0.15s;
+  }
+  .tag-pill:hover { border-color: var(--navy); color: var(--navy); }
+  .tag-pill.sel { background: var(--navy); color: white; border-color: var(--navy); }
+  .btn-primary {
+    background: var(--navy); color: white; border: none;
+    border-radius: 9px; padding: 9px 22px; font-size: 13px;
+    font-weight: 500; font-family: inherit; cursor: pointer;
+    transition: background 0.15s, transform 0.1s;
+  }
+  .btn-primary:hover { background: var(--navy-light); }
+  .btn-primary:active { transform: scale(0.97); }
+
+  /* ── POST CARD ── */
+  .post-card {
+    background: white; border: 1px solid var(--gray-border);
+    border-radius: 14px; padding: 1.25rem;
+    margin-bottom: 1rem;
+    box-shadow: 0 2px 8px rgba(10,31,110,0.04);
+    animation: fadeIn 0.3s ease;
+  }
+  @keyframes fadeIn { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
+  .post-header { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+  .avatar {
+    width: 38px; height: 38px; border-radius: 50%;
+    background: var(--navy); color: white;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px; font-weight: 600; flex-shrink: 0;
+  }
+  .post-meta { flex: 1; }
+  .post-author { font-size: 14px; font-weight: 600; color: var(--text); display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .post-time { font-size: 12px; color: var(--text-muted); margin-top: 1px; }
+  .badge {
+    font-size: 11px; font-weight: 500;
+    padding: 2px 10px; border-radius: 20px;
+  }
+  .badge-actu { background: #e8f0fe; color: #1a3a9f; }
+  .badge-event { background: #fce8e6; color: #b03025; }
+  .badge-annonce { background: #e6f7ee; color: #1a7a4a; }
+  .badge-info { background: #fff8e6; color: #8a6000; }
+  .post-content { font-size: 14px; line-height: 1.7; color: var(--text); margin-bottom: 14px; }
+  .post-actions {
+    display: flex; gap: 4px;
+    border-top: 1px solid var(--gray-border); padding-top: 12px;
+  }
+  .action-btn {
+    background: none; border: none; font-size: 13px; font-family: inherit;
+    color: var(--text-muted); cursor: pointer;
+    padding: 5px 12px; border-radius: 8px;
+    display: flex; align-items: center; gap: 5px;
+    transition: all 0.15s;
+  }
+  .action-btn:hover { background: var(--navy-faint); color: var(--navy); }
+  .action-btn.liked { color: var(--red); }
+  .action-btn.liked:hover { background: #fce8e6; }
+
+  /* ── NEWSLETTER ── */
+  .nl-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; }
+  .section-title { font-size: 17px; font-weight: 600; color: var(--navy); }
+  .nl-card {
+    background: white; border: 1px solid var(--gray-border);
+    border-radius: 14px; padding: 1.25rem;
+    margin-bottom: 1rem; display: flex; gap: 1rem; align-items: center;
+    box-shadow: 0 2px 8px rgba(10,31,110,0.04);
+    animation: fadeIn 0.3s ease;
+    transition: box-shadow 0.15s;
+  }
+  .nl-card:hover { box-shadow: 0 4px 16px rgba(10,31,110,0.08); }
+  .nl-icon {
+    width: 52px; height: 52px; border-radius: 12px;
+    background: var(--navy); display: flex; align-items: center; justify-content: center;
+    font-size: 24px; flex-shrink: 0;
+  }
+  .nl-info { flex: 1; }
+  .nl-title { font-size: 15px; font-weight: 600; color: var(--text); margin-bottom: 3px; }
+  .nl-desc { font-size: 13px; color: var(--text-muted); line-height: 1.5; }
+  .nl-date { font-size: 12px; color: var(--text-muted); margin-top: 5px; }
+  .btn-outline {
+    background: none; border: 1.5px solid var(--navy); color: var(--navy);
+    border-radius: 9px; padding: 8px 18px; font-size: 13px;
+    font-weight: 500; font-family: inherit; cursor: pointer;
+    white-space: nowrap; transition: all 0.15s; flex-shrink: 0;
+  }
+  .btn-outline:hover { background: var(--navy); color: white; }
+  .btn-outline.read { background: var(--navy-faint); border-color: var(--navy-faint); color: var(--navy); }
+
+  /* NL FORM */
+  .nl-form {
+    background: var(--gray-bg); border: 1.5px dashed var(--gray-border);
+    border-radius: 14px; padding: 1.25rem; margin-bottom: 1.25rem;
+    display: none;
+    animation: fadeIn 0.2s ease;
+  }
+  .nl-form.open { display: block; }
+  .nl-form h3 { font-size: 15px; font-weight: 600; color: var(--navy); margin-bottom: 1rem; }
+  .form-row { display: flex; gap: 10px; margin-bottom: 10px; flex-wrap: wrap; }
+  .form-input {
+    flex: 1; min-width: 160px; border: 1px solid var(--gray-border);
+    border-radius: 9px; padding: 9px 13px; font-size: 13px;
+    font-family: inherit; outline: none; background: white;
+    color: var(--text); transition: border 0.15s;
+  }
+  .form-input:focus { border-color: var(--accent); }
+
+  /* ── AGENDA ── */
+  .agenda-card {
+    background: white; border: 1px solid var(--gray-border);
+    border-radius: 14px; padding: 1.25rem;
+    margin-bottom: 1rem; display: flex; gap: 1.25rem; align-items: flex-start;
+    box-shadow: 0 2px 8px rgba(10,31,110,0.04);
+    transition: box-shadow 0.15s;
+  }
+  .agenda-card:hover { box-shadow: 0 4px 16px rgba(10,31,110,0.08); }
+  .agenda-date {
+    background: var(--navy); color: white;
+    border-radius: 12px; padding: 10px 14px;
+    text-align: center; flex-shrink: 0; min-width: 58px;
+  }
+  .agenda-day { font-size: 24px; font-weight: 700; line-height: 1; }
+  .agenda-month { font-size: 11px; opacity: 0.75; text-transform: uppercase; letter-spacing: 0.5px; margin-top: 2px; }
+  .agenda-info h3 { font-size: 15px; font-weight: 600; color: var(--text); margin-bottom: 5px; }
+  .agenda-info p { font-size: 13px; color: var(--text-muted); line-height: 1.6; }
+  .agenda-loc { font-size: 12px; color: var(--navy-light); margin-top: 7px; font-weight: 500; }
+
+  /* ── TOAST ── */
+  .toast {
+    position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(20px);
+    background: var(--navy-dark); color: white;
+    padding: 12px 24px; border-radius: 12px;
+    font-size: 14px; font-weight: 500;
+    opacity: 0; pointer-events: none;
+    transition: all 0.3s ease; z-index: 999;
+    box-shadow: 0 8px 24px rgba(5,15,58,0.3);
+    white-space: nowrap;
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  /* ── EMPTY STATE ── */
+  .empty-state {
+    text-align: center; padding: 3rem 1rem;
+    color: var(--text-muted); font-size: 14px;
+  }
+  .empty-state div { font-size: 40px; margin-bottom: 12px; }
+
+  /* ── FOOTER ── */
+  footer {
+    background: var(--navy-dark); color: rgba(255,255,255,0.4);
+    text-align: center; font-size: 12px; padding: 1.5rem;
+    margin-top: 3rem;
+  }
+  footer span { color: rgba(255,255,255,0.7); }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 600px) {
+    nav { padding: 0 1rem; }
+    .nav-title-sub { display: none; }
+    .nav-link { padding: 0 10px; font-size: 12px; }
+    .hero { padding: 1.5rem 1rem; gap: 1rem; }
+    .hero-text h1 { font-size: 20px; }
+    .hero-logo-big { width: 70px; height: 70px; }
+    .hero-logo-big img { width: 66px; height: 66px; }
+    .hero-stats { gap: 1rem; }
+    .layout { padding: 1rem 0.75rem; }
+    .nl-card { flex-wrap: wrap; }
+    .btn-outline { width: 100%; text-align: center; }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <a class="nav-brand" href="#">
+    <div class="nav-logo-wrap" id="navLogo">
+      <svg class="nav-logo-svg" viewBox="0 0 36 36"><circle cx="18" cy="18" r="18" fill="#0a1f6e"/><text x="18" y="22" text-anchor="middle" fill="white" font-size="9" font-family="sans-serif" font-weight="600">GEA</text></svg>
+    </div>
+    <div>
+      <div class="nav-title-text">Esprit GEA</div>
+      <div class="nav-title-sub">BUT Gestion des Entreprises</div>
+    </div>
+  </a>
+  <div class="nav-links">
+    <button class="nav-link active" onclick="switchTab('feed',this)">Fil d'actu</button>
+    <button class="nav-link" onclick="switchTab('newsletter',this)">Newsletter <span class="notif-dot">2</span></button>
+    <button class="nav-link" onclick="switchTab('agenda',this)">Agenda</button>
+  </div>
+</nav>
+
+<div class="hero">
+  <div class="hero-text">
+    <h1>Bienvenue sur l'Intranet BUT GEA</h1>
+    <p>Partagez, informez et collaborez avec toute votre promotion en temps réel.</p>
+    <div class="hero-stats">
+      <div class="hero-stat"><div class="hero-stat-num" id="statPosts">3</div><div class="hero-stat-label">Publications</div></div>
+      <div class="hero-stat"><div class="hero-stat-num">3</div><div class="hero-stat-label">Newsletters</div></div>
+      <div class="hero-stat"><div class="hero-stat-num">4</div><div class="hero-stat-label">Événements</div></div>
+    </div>
+  </div>
+  <div class="hero-logo-big" id="heroLogo">
+    <svg viewBox="0 0 86 86" style="width:86px;height:86px"><circle cx="43" cy="43" r="43" fill="#0a1f6e"/><text x="43" y="36" text-anchor="middle" fill="white" font-size="13" font-family="sans-serif" font-weight="600">ESPRIT</text><text x="43" y="54" text-anchor="middle" fill="white" font-size="13" font-family="sans-serif" font-weight="600">GEA</text></svg>
+  </div>
+</div>
+
+<div class="layout">
+
+  <div class="tabs-bar">
+    <button class="tab active" id="tab-feed" onclick="switchTab('feed',this)">📰 Fil d'actualité</button>
+    <button class="tab" id="tab-newsletter" onclick="switchTab('newsletter',this)">✉️ Newsletter</button>
+    <button class="tab" id="tab-agenda" onclick="switchTab('agenda',this)">📅 Agenda</button>
+  </div>
+
+  <!-- ── FIL D'ACTUALITÉ ── -->
+  <div class="section visible" id="section-feed">
+    <div class="post-form">
+      <div class="post-form-top">
+        <div class="form-avatar">Moi</div>
+        <textarea id="postText" placeholder="Partagez une info, une question ou une annonce avec votre promo..."></textarea>
+      </div>
+      <div class="post-form-footer">
+        <div class="tags-row">
+          <button class="tag-pill sel" onclick="pickTag(this,'Actualité')">Actualité</button>
+          <button class="tag-pill" onclick="pickTag(this,'Événement')">Événement</button>
+          <button class="tag-pill" onclick="pickTag(this,'Annonce')">Annonce</button>
+          <button class="tag-pill" onclick="pickTag(this,'Info')">Info</button>
+        </div>
+        <button class="btn-primary" onclick="publishPost()">Publier</button>
+      </div>
+    </div>
+
+    <div id="posts-container">
+      <div class="post-card">
+        <div class="post-header">
+          <div class="avatar" style="background:#1a3a9f">ML</div>
+          <div class="post-meta">
+            <div class="post-author">Marie Lefebvre <span class="badge badge-event">Événement</span></div>
+            <div class="post-time">Il y a 2 heures</div>
+          </div>
+        </div>
+        <div class="post-content">Rappel : la journée d'intégration des BUT1 aura lieu le <strong>vendredi 18 avril</strong> à partir de 9h en salle C204. Présence obligatoire pour tous les tuteurs ! 🎉</div>
+        <div class="post-actions">
+          <button class="action-btn" onclick="likePost(this)">♥ <span class="lc">12</span></button>
+          <button class="action-btn" onclick="alert('Commentaires : fonctionnalité à connecter à votre backend !')">💬 Commenter</button>
+          <button class="action-btn" onclick="copyLink()">↗ Partager</button>
+        </div>
+      </div>
+
+      <div class="post-card">
+        <div class="post-header">
+          <div class="avatar" style="background:#0a5a3a">TD</div>
+          <div class="post-meta">
+            <div class="post-author">Thomas Dupont <span class="badge badge-actu">Actualité</span></div>
+            <div class="post-time">Hier à 16h30</div>
+          </div>
+        </div>
+        <div class="post-content">Les résultats du contrôle de gestion S4 viennent d'être mis en ligne sur Moodle. La moyenne de promo est de 13,2/20. Bravo à tous ! Pour ceux qui souhaitent une correction, rendez-vous en permanence jeudi.</div>
+        <div class="post-actions">
+          <button class="action-btn" onclick="likePost(this)">♥ <span class="lc">8</span></button>
+          <button class="action-btn" onclick="alert('Commentaires : fonctionnalité à connecter à votre backend !')">💬 Commenter</button>
+          <button class="action-btn" onclick="copyLink()">↗ Partager</button>
+        </div>
+      </div>
+
+      <div class="post-card">
+        <div class="post-header">
+          <div class="avatar" style="background:#7a1f0a">SC</div>
+          <div class="post-meta">
+            <div class="post-author">Sophie Carreau <span class="badge badge-annonce">Annonce</span></div>
+            <div class="post-time">Il y a 3 jours</div>
+          </div>
+        </div>
+        <div class="post-content">Offre de stage disponible ! Une PME locale recherche un(e) étudiant(e) en GEA pour un stage de 3 mois en comptabilité/finance. Contactez Mme Martin au bureau des stages pour plus d'infos.</div>
+        <div class="post-actions">
+          <button class="action-btn" onclick="likePost(this)">♥ <span class="lc">21</span></button>
+          <button class="action-btn" onclick="alert('Commentaires : fonctionnalité à connecter à votre backend !')">💬 Commenter</button>
+          <button class="action-btn" onclick="copyLink()">↗ Partager</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── NEWSLETTER ── -->
+  <div class="section" id="section-newsletter">
+    <div class="nl-header">
+      <div class="section-title">Newsletters</div>
+      <button class="btn-primary" onclick="toggleNlForm()">+ Créer</button>
+    </div>
+
+    <div class="nl-form" id="nlForm">
+      <h3>Nouvelle newsletter</h3>
+      <div class="form-row">
+        <input class="form-input" id="nlTitle" placeholder="Titre (ex: Gazette GEA — Mai 2026)">
+        <input class="form-input" id="nlDesc" placeholder="Description courte">
+      </div>
+      <button class="btn-primary" onclick="addNewsletter()">Publier</button>
+      <button class="btn-outline" style="margin-left:8px" onclick="toggleNlForm()">Annuler</button>
+    </div>
+
+    <div id="nl-container">
+      <div class="nl-card">
+        <div class="nl-icon">📰</div>
+        <div class="nl-info">
+          <div class="nl-title">La Gazette GEA — Avril 2026</div>
+          <div class="nl-desc">Retour sur le Forum des entreprises, témoignages d'alternants et agenda des soutenances.</div>
+          <div class="nl-date">Publiée le 5 avril 2026</div>
+        </div>
+        <button class="btn-outline read" onclick="toggleRead(this)">Lu ✓</button>
+      </div>
+      <div class="nl-card">
+        <div class="nl-icon">💼</div>
+        <div class="nl-info">
+          <div class="nl-title">Offres & Opportunités — Mars 2026</div>
+          <div class="nl-desc">Stages, alternances et offres d'emploi sélectionnées pour les étudiants GEA.</div>
+          <div class="nl-date">Publiée le 28 mars 2026</div>
+        </div>
+        <button class="btn-outline" onclick="toggleRead(this)">Lire</button>
+      </div>
+      <div class="nl-card">
+        <div class="nl-icon">🎓</div>
+        <div class="nl-info">
+          <div class="nl-title">Vie étudiante & Projets — Mars 2026</div>
+          <div class="nl-desc">Projets tuteurés, concours, vie associative et résultats des jurys.</div>
+          <div class="nl-date">Publiée le 14 mars 2026</div>
+        </div>
+        <button class="btn-outline" onclick="toggleRead(this)">Lire</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── AGENDA ── -->
+  <div class="section" id="section-agenda">
+    <div class="section-title" style="margin-bottom:1rem">Événements à venir</div>
+    <div id="agenda-container">
+      <div class="agenda-card">
+        <div class="agenda-date"><div class="agenda-day">14</div><div class="agenda-month">Avr</div></div>
+        <div class="agenda-info">
+          <h3>Soutenance Projets Tuteurés BUT2</h3>
+          <p>Présentation des projets tuteurés devant jury composé d'enseignants et de professionnels.</p>
+          <div class="agenda-loc">📍 Amphithéâtre A — 9h00 à 17h00</div>
+        </div>
+      </div>
+      <div class="agenda-card">
+        <div class="agenda-date"><div class="agenda-day">18</div><div class="agenda-month">Avr</div></div>
+        <div class="agenda-info">
+          <h3>Journée d'intégration BUT1</h3>
+          <p>Accueil et intégration des étudiants de première année avec activités de cohésion.</p>
+          <div class="agenda-loc">📍 Salle C204 & Espace extérieur — 9h00</div>
+        </div>
+      </div>
+      <div class="agenda-card">
+        <div class="agenda-date"><div class="agenda-day">25</div><div class="agenda-month">Avr</div></div>
+        <div class="agenda-info">
+          <h3>Forum des Alternances GEA</h3>
+          <p>Rencontrez des entreprises partenaires et déposez vos candidatures pour l'alternance BUT3.</p>
+          <div class="agenda-loc">📍 Hall principal IUT — 10h00 à 16h00</div>
+        </div>
+      </div>
+      <div class="agenda-card">
+        <div class="agenda-date"><div class="agenda-day">6</div><div class="agenda-month">Mai</div></div>
+        <div class="agenda-info">
+          <h3>Conférence Métiers de la Finance</h3>
+          <p>Intervention d'anciens diplômés GEA sur leurs parcours en audit, contrôle de gestion et finance.</p>
+          <div class="agenda-loc">📍 Amphi B — 14h00 à 16h30</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<footer>
+  Esprit GEA — Intranet BUT Gestion des Entreprises &nbsp;|&nbsp; <span>IUT</span> &nbsp;·&nbsp; Fait avec ♥ par votre promo
+</footer>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  // ── LOGO (remplacez le src par votre logo réel) ──
+  // Pour utiliser votre propre logo, remplacez "votre-logo.png" par le chemin de votre fichier image
+  // et décommentez les lignes suivantes :
+  /*
+  (function() {
+    var logoSrc = 'votre-logo.png'; // <-- Mettez ici le nom de votre fichier logo
+    ['navLogo','heroLogo'].forEach(function(id) {
+      var el = document.getElementById(id);
+      el.innerHTML = '<img src="' + logoSrc + '" style="width:100%;height:100%;object-fit:cover;border-radius:50%">';
+    });
+  })();
+  */
+
+  // ── TABS ──
+  var currentTag = 'Actualité';
+  function switchTab(name, btn) {
+    document.querySelectorAll('.section').forEach(function(s){ s.classList.remove('visible'); });
+    document.querySelectorAll('.tab').forEach(function(t){ t.classList.remove('active'); });
+    document.querySelectorAll('.nav-link').forEach(function(b){ b.classList.remove('active'); });
+    document.getElementById('section-' + name).classList.add('visible');
+    var tabEl = document.getElementById('tab-' + name);
+    if (tabEl) tabEl.classList.add('active');
+    if (btn) btn.classList.add('active');
+  }
+
+  // ── TAGS ──
+  function pickTag(btn, tag) {
+    document.querySelectorAll('.tag-pill').forEach(function(b){ b.classList.remove('sel'); });
+    btn.classList.add('sel');
+    currentTag = tag;
+  }
+
+  // ── PUBLISH POST ──
+  var postCount = 3;
+  function publishPost() {
+    var text = document.getElementById('postText').value.trim();
+    if (!text) { showToast('✏️ Écrivez quelque chose avant de publier.'); return; }
+    var badgeMap = { 'Actualité':'badge-actu','Événement':'badge-event','Annonce':'badge-annonce','Info':'badge-info' };
+    var colors = ['#0a1f6e','#1a3a9f','#1a7a4a','#7a1f0a','#5a1a7a','#0a5a3a'];
+    var c = colors[Math.floor(Math.random()*colors.length)];
+    var initials = 'Moi';
+    var now = new Date();
+    var timeStr = 'À l\'instant';
+    var card = document.createElement('div');
+    card.className = 'post-card';
+    card.innerHTML =
+      '<div class="post-header">' +
+        '<div class="avatar" style="background:' + c + '">' + initials + '</div>' +
+        '<div class="post-meta">' +
+          '<div class="post-author">Vous <span class="badge ' + badgeMap[currentTag] + '">' + currentTag + '</span></div>' +
+          '<div class="post-time">' + timeStr + '</div>' +
+        '</div>' +
+      '</div>' +
+      '<div class="post-content">' + text.replace(/\n/g,'<br>').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/&lt;br&gt;/g,'<br>') + '</div>' +
+      '<div class="post-actions">' +
+        '<button class="action-btn" onclick="likePost(this)">♥ <span class="lc">0</span></button>' +
+        '<button class="action-btn" onclick="alert(\'Commentaires : fonctionnalité à connecter à votre backend !\')">💬 Commenter</button>' +
+        '<button class="action-btn" onclick="copyLink()">↗ Partager</button>' +
+      '</div>';
+    var container = document.getElementById('posts-container');
+    container.insertBefore(card, container.firstChild);
+    document.getElementById('postText').value = '';
+    postCount++;
+    document.getElementById('statPosts').textContent = postCount;
+    showToast('✅ Publication ajoutée !');
+  }
+
+  // ── LIKE ──
+  function likePost(btn) {
+    var lc = btn.querySelector('.lc');
+    var liked = btn.classList.toggle('liked');
+    lc.textContent = parseInt(lc.textContent) + (liked ? 1 : -1);
+  }
+
+  // ── NEWSLETTER ──
+  function toggleNlForm() {
+    document.getElementById('nlForm').classList.toggle('open');
+  }
+  var nlIcons = ['📰','💡','🎓','📊','🏆','📋','🌟'];
+  function addNewsletter() {
+    var title = document.getElementById('nlTitle').value.trim();
+    var desc = document.getElementById('nlDesc').value.trim();
+    if (!title) { showToast('📝 Donnez un titre à votre newsletter.'); return; }
+    var icon = nlIcons[Math.floor(Math.random()*nlIcons.length)];
+    var today = new Date().toLocaleDateString('fr-FR',{day:'numeric',month:'long',year:'numeric'});
+    var card = document.createElement('div');
+    card.className = 'nl-card';
+    card.innerHTML =
+      '<div class="nl-icon">' + icon + '</div>' +
+      '<div class="nl-info">' +
+        '<div class="nl-title">' + title + '</div>' +
+        '<div class="nl-desc">' + (desc || 'Nouvelle newsletter GEA.') + '</div>' +
+        '<div class="nl-date">Publiée le ' + today + '</div>' +
+      '</div>' +
+      '<button class="btn-outline" onclick="toggleRead(this)">Lire</button>';
+    var container = document.getElementById('nl-container');
+    container.insertBefore(card, container.firstChild);
+    document.getElementById('nlTitle').value = '';
+    document.getElementById('nlDesc').value = '';
+    document.getElementById('nlForm').classList.remove('open');
+    showToast('✅ Newsletter publiée !');
+  }
+  function toggleRead(btn) {
+    if (btn.classList.toggle('read')) { btn.textContent = 'Lu ✓'; }
+    else { btn.textContent = 'Lire'; }
+  }
+
+  // ── SHARE ──
+  function copyLink() {
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(window.location.href);
+      showToast('🔗 Lien copié !');
+    } else { showToast('🔗 Copiez l\'URL de la page !'); }
+  }
+
+  // ── TOAST ──
+  function showToast(msg) {
+    var t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    clearTimeout(window._toastTimer);
+    window._toastTimer = setTimeout(function(){ t.classList.remove('show'); }, 2800);
+  }
+</script>
+</body>
+</html>
