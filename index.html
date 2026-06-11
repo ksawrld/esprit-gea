@@ -1,106 +1,1137 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="fr">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Compteur - Tombola</title>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Encor'Utile — Les invendus qu'on veut tous</title>
+<meta name="description" content="Encor'Utile valorise les invendus neufs des marques : paniers surprise à petit prix et produits visibles, en retrait chez nos commerçants partenaires. Anti-gaspillage, loi AGEC." />
+<link rel="icon" href="logo.png" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700;12..96,800&family=Inter:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
 <style>
-  :root{--bg:#0f1724;--card:#0b1220;--accent:#38bdf8;--muted:#94a3b8;}
-  body{margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,"Helvetica Neue",Arial;background:linear-gradient(180deg,#021226 0%, #041428 100%);color:#e6eef6;display:flex;align-items:center;justify-content:center;height:100vh;padding:20px}
-  .card{width:100%;max-width:760px;background:rgba(255,255,255,0.03);border-radius:12px;padding:22px;box-shadow:0 10px 30px rgba(2,6,23,0.7)}
-  h1{margin:0 0 8px;font-size:20px}
-  .big{font-size:44px;font-weight:700;letter-spacing:-1px}
-  .muted{color:var(--muted);font-size:14px}
-  .bar{height:18px;background:rgba(255,255,255,0.06);border-radius:10px;overflow:hidden;margin:18px 0}
-  .fill{height:100%;width:0;background:linear-gradient(90deg,var(--accent),#60a5fa);display:flex;align-items:center;justify-content:center;color:#022;white-space:nowrap;font-weight:700;transition:width 800ms cubic-bezier(.2,.9,.2,1)}
-  .thresholds{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
-  .th{padding:8px 10px;border-radius:8px;background:rgba(255,255,255,0.02);font-size:13px;display:flex;gap:8px;align-items:center;flex:1 1 calc(50% - 10px);min-width:220px}
-  .th strong{font-weight:700}
-  .th.locked{opacity:0.5}
-  .th.unlocked{background:linear-gradient(90deg,#073b3f,#0b6b6b);box-shadow:0 6px 18px rgba(3,98,88,0.18)}
-  .footer{display:flex;justify-content:space-between;align-items:center;margin-top:18px;gap:10px;flex-wrap:wrap}
-  button{background:transparent;border:1px solid rgba(255,255,255,0.06);padding:8px 12px;border-radius:8px;color:inherit;cursor:pointer}
-  .small{font-size:13px}
+/* ============================================================
+   ENCOR'UTILE — charte dérivée du logo
+   teal #1E7B95 · marine #0D294E · blanc · accent ambre (surprise)
+   ============================================================ */
+:root{
+  --navy:#0D294E;
+  --navy-soft:#1d3a63;
+  --teal:#1E7B95;
+  --teal-deep:#155f74;
+  --teal-tint:#e3f0f2;
+  --teal-tint-2:#f1f8f9;
+  --paper:#f4f8f9;
+  --white:#ffffff;
+  --ink:#0D294E;
+  --muted:#5c7186;
+  --line:#dde7ea;
+  --amber:#f2a63b;
+  --amber-deep:#cf7d12;
+  --amber-tint:#fdf1de;
+  --green:#2f8f6b;
+  --shadow-sm:0 1px 2px rgba(13,41,78,.06),0 2px 8px rgba(13,41,78,.05);
+  --shadow-md:0 6px 24px rgba(13,41,78,.10);
+  --shadow-lg:0 18px 48px rgba(13,41,78,.16);
+  --r:14px;
+  --r-lg:22px;
+  --maxw:1180px;
+  --nav-h:68px;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0;background:var(--paper);color:var(--ink);
+  font-family:"Inter",system-ui,sans-serif;font-size:16px;line-height:1.6;
+  -webkit-font-smoothing:antialiased;
+}
+h1,h2,h3,h4{font-family:"Bricolage Grotesque","Inter",sans-serif;line-height:1.08;margin:0;letter-spacing:-.02em;color:var(--navy)}
+h1{font-weight:800}h2{font-weight:700}h3{font-weight:600}
+a{color:inherit;text-decoration:none}
+img{max-width:100%;display:block}
+button{font-family:inherit;cursor:pointer;border:none;background:none}
+.mono{font-family:"Space Mono",monospace}
+.wrap{max-width:var(--maxw);margin:0 auto;padding:0 22px}
+.eyebrow{font-family:"Space Mono",monospace;font-size:.72rem;letter-spacing:.18em;text-transform:uppercase;color:var(--teal-deep);font-weight:700}
+.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+:focus-visible{outline:3px solid var(--amber);outline-offset:2px;border-radius:6px}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
+
+/* ---------- boutons ---------- */
+.btn{display:inline-flex;align-items:center;gap:.55rem;font-weight:600;font-size:.95rem;
+  padding:.72rem 1.25rem;border-radius:999px;transition:.18s ease;white-space:nowrap}
+.btn svg{width:18px;height:18px}
+.btn-primary{background:var(--teal);color:#fff;box-shadow:var(--shadow-sm)}
+.btn-primary:hover{background:var(--teal-deep);transform:translateY(-1px);box-shadow:var(--shadow-md)}
+.btn-navy{background:var(--navy);color:#fff}
+.btn-navy:hover{background:#081d39;transform:translateY(-1px)}
+.btn-amber{background:var(--amber);color:var(--navy)}
+.btn-amber:hover{background:var(--amber-deep);color:#fff;transform:translateY(-1px)}
+.btn-ghost{background:transparent;color:var(--navy);border:1.5px solid var(--line)}
+.btn-ghost:hover{border-color:var(--teal);color:var(--teal-deep);background:var(--white)}
+.btn-sm{padding:.5rem .9rem;font-size:.85rem}
+.btn-block{width:100%;justify-content:center}
+
+/* ---------- badges ---------- */
+.tag{display:inline-flex;align-items:center;gap:.35rem;font-family:"Space Mono",monospace;
+  font-size:.66rem;letter-spacing:.06em;text-transform:uppercase;font-weight:700;
+  padding:.28rem .6rem;border-radius:999px}
+.tag-surprise{background:var(--amber-tint);color:var(--amber-deep)}
+.tag-visible{background:var(--teal-tint);color:var(--teal-deep)}
+.tag-sponsor{background:var(--navy);color:#fff}
+.tag-cat{background:#eef3f5;color:var(--muted)}
+.tag-verite{background:#e7f4ee;color:var(--green)}
+
+/* ============================================================ NAV */
+header.nav{position:sticky;top:0;z-index:60;background:rgba(244,248,249,.86);
+  backdrop-filter:saturate(140%) blur(12px);border-bottom:1px solid var(--line)}
+.nav-in{display:flex;align-items:center;gap:18px;height:var(--nav-h);max-width:var(--maxw);margin:0 auto;padding:0 22px}
+.brand{display:flex;align-items:center;gap:10px;font-family:"Bricolage Grotesque";font-weight:800;
+  font-size:1.18rem;color:var(--navy);letter-spacing:-.02em}
+.brand .mark{width:36px;height:36px;flex:0 0 36px}
+.brand .ap{color:var(--teal);margin:0 -.1em}
+/* segmented perso/pro */
+.seg{display:flex;background:#e6eef0;border:1px solid var(--line);border-radius:999px;padding:3px;margin-left:4px}
+.seg button{font-size:.82rem;font-weight:700;padding:.34rem .85rem;border-radius:999px;color:var(--muted);transition:.18s}
+.seg button.on{background:var(--white);color:var(--navy);box-shadow:var(--shadow-sm)}
+.seg button.on[data-ctx="pro"]{color:var(--teal-deep)}
+.seg .sm{display:none}
+.nav-links{display:flex;align-items:center;gap:2px;margin-left:auto}
+.nav-links a{font-size:.92rem;font-weight:500;color:var(--navy-soft);padding:.5rem .7rem;border-radius:9px;transition:.15s}
+.nav-links a:hover{background:var(--teal-tint);color:var(--teal-deep)}
+.nav-links a.active{color:var(--teal-deep);font-weight:600}
+.cart-btn{position:relative;display:inline-flex;align-items:center;justify-content:center;width:42px;height:42px;border-radius:12px;background:var(--white);border:1px solid var(--line);color:var(--navy)}
+.cart-btn:hover{border-color:var(--teal)}
+.cart-btn svg{width:20px;height:20px}
+.cart-count{position:absolute;top:-6px;right:-6px;min-width:19px;height:19px;padding:0 4px;background:var(--amber);
+  color:var(--navy);font-size:.68rem;font-weight:700;border-radius:999px;display:flex;align-items:center;justify-content:center;font-family:"Space Mono"}
+.burger{display:none;width:42px;height:42px;border-radius:12px;border:1px solid var(--line);background:var(--white);align-items:center;justify-content:center}
+.burger svg{width:22px;height:22px;color:var(--navy)}
+
+/* ============================================================ HERO */
+.hero{position:relative;overflow:hidden;padding:64px 0 72px}
+.hero-grid{display:grid;grid-template-columns:1.05fr .95fr;gap:48px;align-items:center}
+.hero h1{font-size:clamp(2.3rem,5.2vw,3.9rem);margin-bottom:.7rem}
+.hero h1 em{font-style:normal;color:var(--teal);position:relative}
+.hero p.lead{font-size:1.12rem;color:var(--muted);max-width:30rem;margin:.2rem 0 1.6rem}
+.hero-cta{display:flex;gap:12px;flex-wrap:wrap}
+.hero-stats{display:flex;gap:26px;margin-top:30px;flex-wrap:wrap}
+.hero-stats .s b{font-family:"Bricolage Grotesque";font-size:1.5rem;color:var(--navy);display:block;line-height:1}
+.hero-stats .s span{font-size:.8rem;color:var(--muted)}
+.hero-art{position:relative;min-height:380px}
+/* floating gift cards */
+.gift-stack{position:relative;height:100%;min-height:380px}
+.gcard{position:absolute;background:var(--white);border:1px solid var(--line);border-radius:20px;
+  box-shadow:var(--shadow-lg);padding:18px;width:212px;animation:float 6s ease-in-out infinite}
+.gcard .gc-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.gcard .gbox{height:118px;border-radius:14px;display:flex;align-items:center;justify-content:center;margin-bottom:12px}
+.gcard .gbox svg{width:80px;height:80px}
+.gcard .price{font-family:"Space Mono";font-weight:700;font-size:1.15rem;color:var(--navy)}
+.gcard .old{font-family:"Space Mono";font-size:.78rem;color:var(--muted);text-decoration:line-through}
+.g1{top:6%;left:2%;z-index:3}
+.g2{top:30%;right:0;z-index:2;animation-delay:1.4s}
+.g3{bottom:2%;left:18%;z-index:1;animation-delay:2.6s}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-12px)}}
+.blob{position:absolute;inset:auto;width:340px;height:340px;border-radius:50%;
+  background:radial-gradient(circle at 35% 30%,#2a93b0,var(--teal));filter:blur(8px);opacity:.16;top:8%;right:6%;z-index:0}
+.ribbon{position:absolute;top:-30px;right:-40px;width:520px;height:520px;border-radius:46% 54% 60% 40%;
+  background:linear-gradient(160deg,var(--teal-tint),#dceef0);z-index:-1;opacity:.7}
+
+/* ============================================================ SECTIONS */
+section.block{padding:64px 0}
+.sec-head{max-width:620px;margin-bottom:34px}
+.sec-head.center{margin:0 auto 38px;text-align:center}
+.sec-head h2{font-size:clamp(1.7rem,3.6vw,2.5rem);margin:.5rem 0 .6rem}
+.sec-head p{color:var(--muted);font-size:1.05rem;margin:0}
+
+/* concept dual offer */
+.duo{display:grid;grid-template-columns:1fr 1fr;gap:22px}
+.offer{border-radius:var(--r-lg);padding:30px;position:relative;overflow:hidden}
+.offer.surprise{background:linear-gradient(165deg,#fff8ec,#fdf1de);border:1px solid #f3ddb4}
+.offer.visible{background:linear-gradient(165deg,#eef6f7,#e3f0f2);border:1px solid #cfe4e7}
+.offer h3{font-size:1.4rem;margin-bottom:.4rem;display:flex;align-items:center;gap:.5rem}
+.offer .ic{width:46px;height:46px;border-radius:13px;display:flex;align-items:center;justify-content:center;margin-bottom:14px}
+.offer.surprise .ic{background:var(--amber);color:var(--navy)}
+.offer.visible .ic{background:var(--teal);color:#fff}
+.offer .ic svg{width:24px;height:24px}
+.offer ul{list-style:none;padding:0;margin:14px 0 0}
+.offer li{display:flex;gap:.5rem;padding:.3rem 0;font-size:.95rem;color:var(--navy-soft)}
+.offer li svg{width:18px;height:18px;flex:0 0 18px;color:var(--teal);margin-top:3px}
+.offer.surprise li svg{color:var(--amber-deep)}
+
+/* steps */
+.steps{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;counter-reset:s}
+.step{background:var(--white);border:1px solid var(--line);border-radius:var(--r);padding:22px;position:relative}
+.step .n{font-family:"Space Mono";font-weight:700;color:var(--teal);font-size:.85rem}
+.step h4{font-size:1.05rem;margin:.5rem 0 .35rem}
+.step p{font-size:.88rem;color:var(--muted);margin:0}
+
+/* category cards */
+.cats{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+.cat{position:relative;border-radius:var(--r-lg);overflow:hidden;border:1px solid var(--line);
+  background:var(--white);padding:26px;transition:.2s;cursor:pointer}
+.cat:hover{transform:translateY(-4px);box-shadow:var(--shadow-md);border-color:var(--teal)}
+.cat .cic{width:60px;height:60px;border-radius:16px;background:var(--teal-tint);display:flex;align-items:center;justify-content:center;margin-bottom:14px;color:var(--teal-deep)}
+.cat .cic svg{width:32px;height:32px}
+.cat h3{font-size:1.25rem;margin-bottom:.3rem}
+.cat p{font-size:.88rem;color:var(--muted);margin:0 0 .8rem}
+.cat .arrow{color:var(--teal);font-weight:600;font-size:.85rem;display:inline-flex;align-items:center;gap:.3rem}
+
+/* ============================================================ BOUTIQUE */
+.shop-head{display:flex;align-items:flex-end;justify-content:space-between;gap:18px;flex-wrap:wrap;margin-bottom:26px}
+.filters{display:flex;gap:8px;flex-wrap:wrap}
+.chip{font-size:.85rem;font-weight:600;padding:.45rem .9rem;border-radius:999px;border:1.5px solid var(--line);
+  background:var(--white);color:var(--navy-soft);transition:.15s}
+.chip:hover{border-color:var(--teal)}
+.chip.on{background:var(--navy);color:#fff;border-color:var(--navy)}
+.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:20px}
+.pcard{background:var(--white);border:1px solid var(--line);border-radius:var(--r-lg);overflow:hidden;
+  display:flex;flex-direction:column;transition:.18s;position:relative}
+.pcard:hover{box-shadow:var(--shadow-md);transform:translateY(-3px);border-color:#cfe0e4}
+.pcard .media{height:178px;position:relative;display:flex;align-items:center;justify-content:center;overflow:hidden}
+.pcard .media svg.illu{width:96px;height:96px}
+.media.m-visible{background:linear-gradient(150deg,#f3f9fa,#e6f1f3)}
+.media.m-surprise{background:linear-gradient(150deg,#fff6e8,#fbe9cb);cursor:pointer}
+.surprise-mark{display:flex;flex-direction:column;align-items:center;gap:6px;color:var(--amber-deep);user-select:none}
+.surprise-mark .q{font-family:"Bricolage Grotesque";font-weight:800;font-size:2.6rem;line-height:1}
+.surprise-mark small{font-size:.7rem;letter-spacing:.1em;text-transform:uppercase;font-weight:700}
+.peek-hint{position:absolute;bottom:8px;left:0;right:0;text-align:center;font-size:.68rem;color:var(--amber-deep);font-family:"Space Mono"}
+.pcard .badges{position:absolute;top:10px;left:10px;display:flex;gap:6px;flex-wrap:wrap;max-width:84%}
+.pcard .pbody{padding:14px 15px 16px;display:flex;flex-direction:column;flex:1}
+.pcard .vendor{font-size:.74rem;color:var(--muted);display:flex;align-items:center;gap:.3rem;margin-bottom:3px}
+.pcard h4{font-size:1rem;margin:0 0 .25rem}
+.pcard .desc{font-size:.82rem;color:var(--muted);margin:0 0 .7rem;flex:1}
+.pcard .price-row{display:flex;align-items:baseline;gap:.5rem;margin-bottom:.7rem}
+.pcard .price{font-family:"Space Mono";font-weight:700;font-size:1.18rem;color:var(--navy)}
+.pcard .old{font-family:"Space Mono";font-size:.82rem;color:var(--muted);text-decoration:line-through}
+.pcard .save{font-size:.7rem;font-weight:700;color:var(--green);background:#e7f4ee;padding:.1rem .4rem;border-radius:6px}
+.empty{grid-column:1/-1;text-align:center;padding:50px;color:var(--muted)}
+
+/* ============================================================ SPONSORS (vendeurs mis en avant) */
+.sponsor-note{display:flex;gap:12px;align-items:flex-start;background:#eef3f5;border:1px dashed #c4d6da;
+  border-radius:var(--r);padding:14px 16px;margin-bottom:26px;font-size:.88rem;color:var(--muted)}
+.sponsor-note svg{width:20px;height:20px;color:var(--teal-deep);flex:0 0 20px;margin-top:2px}
+.vrow{display:flex;align-items:center;gap:18px;background:var(--white);border:1px solid var(--line);
+  border-radius:var(--r-lg);padding:18px 20px;margin-bottom:14px;transition:.18s;position:relative}
+.vrow:hover{box-shadow:var(--shadow-md);border-color:#cfe0e4}
+.vrow.is-sponsor{border-color:#d6c19a;background:linear-gradient(100deg,#fffdf8,#fff)}
+.vrow .rank{font-family:"Space Mono";font-weight:700;color:var(--muted);width:26px;text-align:center;flex:0 0 26px}
+.vmono{width:58px;height:58px;flex:0 0 58px;border-radius:15px;display:flex;align-items:center;justify-content:center;
+  font-family:"Bricolage Grotesque";font-weight:800;font-size:1.4rem;color:#fff}
+.vinfo{flex:1;min-width:0}
+.vinfo .vh{display:flex;align-items:center;gap:.5rem;flex-wrap:wrap}
+.vinfo h4{font-size:1.08rem}
+.vinfo p{font-size:.85rem;color:var(--muted);margin:.15rem 0 0}
+.vmeta{font-size:.78rem;color:var(--muted);text-align:right;flex:0 0 auto}
+.vmeta b{font-family:"Space Mono";color:var(--navy);display:block;font-size:1rem}
+
+/* ============================================================ generic feature/cards */
+.feat{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+.fcard{background:var(--white);border:1px solid var(--line);border-radius:var(--r-lg);padding:26px}
+.fcard .fic{width:48px;height:48px;border-radius:13px;background:var(--teal-tint);color:var(--teal-deep);display:flex;align-items:center;justify-content:center;margin-bottom:14px}
+.fcard .fic svg{width:24px;height:24px}
+.fcard h3{font-size:1.15rem;margin-bottom:.4rem}
+.fcard p{font-size:.9rem;color:var(--muted);margin:0}
+
+/* panel split */
+.split{display:grid;grid-template-columns:1fr 1fr;gap:40px;align-items:center}
+.panel{background:var(--white);border:1px solid var(--line);border-radius:var(--r-lg);padding:30px}
+.kv{display:flex;justify-content:space-between;padding:.7rem 0;border-bottom:1px solid var(--line);font-size:.95rem}
+.kv:last-child{border:none}
+.kv b{font-family:"Space Mono"}
+.checklist{list-style:none;padding:0;margin:0}
+.checklist li{display:flex;gap:.6rem;padding:.4rem 0;font-size:.95rem;color:var(--navy-soft)}
+.checklist li svg{width:20px;height:20px;color:var(--green);flex:0 0 20px;margin-top:2px}
+
+/* commission visual */
+.share{display:flex;height:54px;border-radius:12px;overflow:hidden;margin:18px 0;box-shadow:var(--shadow-sm)}
+.share .seg70{flex:0 0 70%;background:var(--teal);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.9rem}
+.share .seg30{flex:1;background:var(--navy);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.9rem}
+
+/* tiers (influenceurs) */
+.tiers{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+.tier{border:1px solid var(--line);border-radius:var(--r-lg);background:var(--white);padding:24px;text-align:center;position:relative}
+.tier.pop{border-color:var(--teal);box-shadow:var(--shadow-md)}
+.tier .tname{font-family:"Bricolage Grotesque";font-weight:700;font-size:1.2rem;color:var(--navy)}
+.tier .tpct{font-family:"Space Mono";font-weight:700;font-size:2.2rem;color:var(--teal);margin:.3rem 0}
+.tier .tpct small{font-size:.9rem;color:var(--muted)}
+.tier ul{list-style:none;padding:0;margin:10px 0 0;text-align:left}
+.tier li{font-size:.85rem;color:var(--navy-soft);padding:.28rem 0;display:flex;gap:.4rem}
+.tier li svg{width:16px;height:16px;color:var(--teal);flex:0 0 16px;margin-top:3px}
+.tier .pop-tag{position:absolute;top:-11px;left:50%;transform:translateX(-50%);background:var(--teal);color:#fff;font-size:.66rem;font-weight:700;padding:.2rem .7rem;border-radius:999px;font-family:"Space Mono";letter-spacing:.05em}
+
+/* dashboard mock */
+.dash{background:var(--navy);border-radius:var(--r-lg);padding:26px;color:#fff;overflow:hidden}
+.dash .dh{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px}
+.dash .code{font-family:"Space Mono";background:rgba(255,255,255,.12);padding:.4rem .8rem;border-radius:8px;font-weight:700;letter-spacing:.08em}
+.dstats{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:18px}
+.dstat{background:rgba(255,255,255,.07);border-radius:12px;padding:14px}
+.dstat b{font-family:"Space Mono";font-size:1.5rem;display:block}
+.dstat span{font-size:.76rem;opacity:.7}
+.bars{display:flex;align-items:flex-end;gap:8px;height:90px}
+.bars .bar{flex:1;background:linear-gradient(var(--teal),#2a93b0);border-radius:6px 6px 0 0;min-height:8px}
+
+/* forms */
+.form{background:var(--white);border:1px solid var(--line);border-radius:var(--r-lg);padding:28px}
+.field{margin-bottom:14px}
+.field label{display:block;font-size:.82rem;font-weight:600;color:var(--navy);margin-bottom:5px}
+.field input,.field select,.field textarea{width:100%;padding:.7rem .9rem;border:1.5px solid var(--line);border-radius:10px;font-family:inherit;font-size:.92rem;color:var(--navy);background:var(--paper)}
+.field input:focus,.field select:focus,.field textarea:focus{outline:none;border-color:var(--teal);background:#fff}
+.note{font-size:.78rem;color:var(--muted)}
+
+/* ============================================================ CART DRAWER */
+.scrim{position:fixed;inset:0;background:rgba(8,22,42,.42);opacity:0;visibility:hidden;transition:.25s;z-index:80}
+.scrim.show{opacity:1;visibility:visible}
+.drawer{position:fixed;top:0;right:0;height:100%;width:400px;max-width:92vw;background:var(--paper);
+  z-index:90;transform:translateX(100%);transition:transform .28s cubic-bezier(.4,0,.2,1);display:flex;flex-direction:column;box-shadow:var(--shadow-lg)}
+.drawer.show{transform:translateX(0)}
+.drawer .dhead{display:flex;align-items:center;justify-content:space-between;padding:18px 20px;border-bottom:1px solid var(--line);background:var(--white)}
+.drawer .dhead h3{font-size:1.2rem}
+.icon-btn{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;color:var(--navy)}
+.icon-btn:hover{background:var(--teal-tint)}
+.icon-btn svg{width:20px;height:20px}
+.ditems{flex:1;overflow-y:auto;padding:16px 20px}
+.citem{display:flex;gap:12px;padding:12px 0;border-bottom:1px solid var(--line)}
+.citem .cthumb{width:58px;height:58px;flex:0 0 58px;border-radius:11px;display:flex;align-items:center;justify-content:center}
+.citem .cthumb svg{width:34px;height:34px}
+.citem .cmid{flex:1;min-width:0}
+.citem h5{font-size:.9rem;margin:0 0 2px}
+.citem .cprice{font-family:"Space Mono";font-weight:700;color:var(--navy);font-size:.92rem}
+.qty{display:inline-flex;align-items:center;border:1px solid var(--line);border-radius:8px;margin-top:6px;background:#fff}
+.qty button{width:26px;height:26px;font-weight:700;color:var(--navy)}
+.qty span{min-width:26px;text-align:center;font-family:"Space Mono";font-size:.85rem}
+.rm{font-size:.74rem;color:var(--muted);margin-top:6px}
+.rm:hover{color:#c0392b}
+.dfoot{padding:18px 20px;border-top:1px solid var(--line);background:var(--white)}
+.dfoot .row{display:flex;justify-content:space-between;font-size:.9rem;margin-bottom:6px;color:var(--muted)}
+.dfoot .row.tot{font-size:1.1rem;color:var(--navy);font-weight:700;margin:8px 0 14px}
+.dfoot .row.tot b{font-family:"Space Mono"}
+.cart-empty{text-align:center;color:var(--muted);padding:50px 20px}
+.cart-empty svg{width:54px;height:54px;color:var(--line);margin-bottom:12px}
+
+/* checkout page */
+.co-grid{display:grid;grid-template-columns:1.4fr 1fr;gap:30px;align-items:start}
+.co-line{display:flex;justify-content:space-between;padding:.55rem 0;font-size:.92rem;border-bottom:1px solid var(--line)}
+.co-line b{font-family:"Space Mono"}
+
+/* ============================================================ FOOTER */
+footer{background:var(--navy);color:#cdd9e6;padding:54px 0 28px;margin-top:40px}
+.fgrid{display:grid;grid-template-columns:1.6fr 1fr 1fr 1fr;gap:32px;margin-bottom:34px}
+footer .brand{color:#fff}
+footer p.tagl{color:#9fb3c8;font-size:.9rem;max-width:22rem;margin:.7rem 0 0}
+footer h5{color:#fff;font-size:.8rem;letter-spacing:.12em;text-transform:uppercase;font-family:"Space Mono";margin:0 0 12px}
+footer ul{list-style:none;padding:0;margin:0}
+footer li a{font-size:.9rem;color:#9fb3c8;display:block;padding:.28rem 0}
+footer li a:hover{color:#fff}
+.fbar{border-top:1px solid rgba(255,255,255,.12);padding-top:18px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px;font-size:.8rem;color:#7f93a8}
+.agec{display:inline-flex;align-items:center;gap:.4rem;background:rgba(47,143,107,.18);color:#7fe0b6;padding:.3rem .7rem;border-radius:999px;font-size:.78rem;font-weight:600}
+
+/* ============================================================ RESPONSIVE */
+@media(max-width:980px){
+  .hero-grid,.split,.co-grid{grid-template-columns:1fr;gap:30px}
+  .hero-art{min-height:330px;order:-1}
+  .grid{grid-template-columns:repeat(3,1fr)}
+  .steps{grid-template-columns:repeat(2,1fr)}
+  .feat,.tiers,.cats{grid-template-columns:1fr 1fr}
+  .fgrid{grid-template-columns:1fr 1fr}
+}
+@media(max-width:760px){
+  .nav-links{display:none}
+  .burger{display:flex}
+  .nav-in{gap:8px;padding:0 14px}
+  .brand{font-size:1.02rem;gap:7px}
+  .brand .mark{width:30px;height:30px;flex:0 0 30px}
+  .seg{margin-left:auto;padding:2px}
+  .seg button{padding:.32rem .6rem;font-size:.78rem}
+  .seg .lg{display:none}
+  .seg .sm{display:inline}
+  .cart-btn,.burger{width:38px;height:38px;flex:0 0 38px}
+  .nav-links.open{display:flex;position:absolute;top:var(--nav-h);left:0;right:0;flex-direction:column;
+    background:var(--white);border-bottom:1px solid var(--line);padding:10px 16px;gap:2px;box-shadow:var(--shadow-md)}
+  .nav-links.open a{padding:.7rem .6rem;border-radius:9px}
+  .duo,.grid,.feat,.tiers,.cats,.fgrid{grid-template-columns:1fr}
+  .steps{grid-template-columns:1fr}
+  .grid{grid-template-columns:1fr 1fr;gap:14px}
+  .pcard .media{height:140px}
+  .vrow{flex-wrap:wrap}
+  .vmeta{text-align:left;width:100%}
+  section.block{padding:46px 0}
+  .hero{padding:40px 0 50px}
+}
+@media(max-width:430px){.grid{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
-<main class="card" role="main" aria-live="polite">
-  <h1>Compteur de ventes — Tombola</h1>
-  <div class="muted small">Partage ce lien pour suivre l’avancement et les paliers débloqués 🎁</div>
 
-  <div style="display:flex;align-items:center;gap:18px;margin-top:14px">
-    <div>
-      <div class="big" id="count">0</div>
-      <div class="muted small">tickets vendus</div>
+<!-- ===================== NAV ===================== -->
+<header class="nav">
+  <div class="nav-in">
+    <a href="#/accueil" class="brand" aria-label="Encor'Utile accueil">
+      <span class="mark" id="navMark"></span>
+      Encor<span class="ap">'</span>Utile
+    </a>
+    <div class="seg" role="tablist" aria-label="Espace particulier ou professionnel">
+      <button data-ctx="perso" class="on" onclick="setCtx('perso')"><span class="lg">Particuliers</span><span class="sm">Perso</span></button>
+      <button data-ctx="pro" onclick="setCtx('pro')"><span class="lg">Pros &amp; Marques</span><span class="sm">Pro</span></button>
     </div>
-    <div style="flex:1">
-      <div class="bar" aria-hidden="true"><div class="fill" id="fill">0%</div></div>
-      <div id="nextThreshold" class="muted small"></div>
+    <nav class="nav-links" id="navLinks" aria-label="Navigation principale"></nav>
+    <button class="cart-btn" onclick="openCart()" aria-label="Ouvrir le panier" id="cartBtn">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+      <span class="cart-count" id="cartCount" style="display:none">0</span>
+    </button>
+    <button class="burger" onclick="toggleBurger()" aria-label="Menu">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+    </button>
+  </div>
+</header>
+
+<main id="app"></main>
+
+<!-- ===================== CART DRAWER ===================== -->
+<div class="scrim" id="scrim" onclick="closeCart()"></div>
+<aside class="drawer" id="drawer" aria-label="Panier">
+  <div class="dhead">
+    <h3>Mon panier</h3>
+    <button class="icon-btn" onclick="closeCart()" aria-label="Fermer"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+  </div>
+  <div class="ditems" id="ditems"></div>
+  <div class="dfoot" id="dfoot"></div>
+</aside>
+
+<footer>
+  <div class="wrap">
+    <div class="fgrid">
+      <div>
+        <a href="#/accueil" class="brand"><span class="mark" id="footMark"></span> Encor<span style="color:var(--teal)">'</span>Utile</a>
+        <p class="tagl">Les invendus qu'on veut tous. On donne une seconde vie commerciale aux produits neufs invendus des marques, à petit prix et près de chez vous.</p>
+        <p style="margin-top:14px"><span class="agec">♻︎ Aligné loi AGEC</span></p>
+      </div>
+      <div>
+        <h5>Boutique</h5>
+        <ul>
+          <li><a href="#/boutique">Tous les produits</a></li>
+          <li><a href="#/surprise">Paniers surprise</a></li>
+          <li><a href="#/sponsors">Marques à la une</a></li>
+          <li><a href="#/parrainage">Parrainage</a></li>
+        </ul>
+      </div>
+      <div>
+        <h5>Pros &amp; Marques</h5>
+        <ul>
+          <li><a href="#/pro">Espace marques</a></li>
+          <li><a href="#/vendre">Vendre mes invendus</a></li>
+          <li><a href="#/visibilite">Booster ma visibilité</a></li>
+          <li><a href="#/influenceurs">Agence d'influenceurs</a></li>
+        </ul>
+      </div>
+      <div>
+        <h5>Encor'Utile</h5>
+        <ul>
+          <li><a href="#/apropos">Le concept</a></li>
+          <li><a href="#/createur">Devenir créateur</a></li>
+          <li><a href="#/apropos">L'équipe</a></li>
+          <li><a href="#/pro">Nous contacter</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="fbar">
+      <span>© 2026 Encor'Utile — Projet étudiant fictif · BUT GEA · Université Gustave Eiffel</span>
+      <span>Lancement : 1ᵉʳ janvier 2026 · Démo non marchande</span>
     </div>
   </div>
-
-  <div class="thresholds" id="thresholds"></div>
-
-  <div class="footer">
-    <div class="muted small">Dernière mise à jour : <span id="updated">—</span></div>
-    <div style="display:flex;gap:8px">
-      <button id="refresh">Actualiser</button>
-      <button id="copy">Copier lien de partage</button>
-    </div>
-  </div>
-</main>
+</footer>
 
 <script>
-const COUNTER_JSON_URL = './counter.json'; 
-const AUTO_REFRESH_SECONDS = 30;
+/* ============================================================
+   ENCOR'UTILE — application (vanilla JS, routage par hash)
+   ============================================================ */
 
-async function loadData(){
-  try{
-    const r = await fetch(COUNTER_JSON_URL, {cache: "no-store"});
-    if(!r.ok) throw new Error('Impossible de récupérer les données');
-    const data = await r.json();
-    render(data);
-  } catch(err){
-    console.error(err);
-    document.getElementById('count').textContent = '—';
-    document.getElementById('fill').style.width = '0%';
-    document.getElementById('thresholds').innerHTML = '<div class="muted small">Erreur de chargement du compteur</div>';
+/* ---------- ICÔNES SVG (illustrations produits, 2 tons marine/teal) ---------- */
+const I = {
+  vase:`<svg class="illu" viewBox="0 0 64 64" fill="none"><path d="M24 10h16l-2 8c5 3 8 8 8 16 0 11-7 18-14 18s-14-7-14-18c0-8 3-13 8-16l-2-8z" fill="#e3f0f2" stroke="#0D294E" stroke-width="2.4"/><path d="M22 30c4 3 16 3 20 0" stroke="#1E7B95" stroke-width="2.4" stroke-linecap="round"/></svg>`,
+  chair:`<svg class="illu" viewBox="0 0 64 64" fill="none"><path d="M20 10v26M44 10v26M18 36h28l-3 18M21 54l3-18" stroke="#0D294E" stroke-width="2.6" stroke-linecap="round"/><rect x="18" y="24" width="28" height="6" rx="2" fill="#1E7B95"/><path d="M20 12h24" stroke="#0D294E" stroke-width="2.6" stroke-linecap="round"/></svg>`,
+  pan:`<svg class="illu" viewBox="0 0 64 64" fill="none"><circle cx="26" cy="34" r="16" fill="#e3f0f2" stroke="#0D294E" stroke-width="2.6"/><path d="M40 30l18-6" stroke="#1E7B95" stroke-width="4" stroke-linecap="round"/><circle cx="26" cy="34" r="8" stroke="#1E7B95" stroke-width="2.2"/></svg>`,
+  frame:`<svg class="illu" viewBox="0 0 64 64" fill="none"><rect x="14" y="12" width="36" height="40" rx="3" fill="#e3f0f2" stroke="#0D294E" stroke-width="2.6"/><path d="M22 42l8-12 6 8 4-5 6 9" stroke="#1E7B95" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/><circle cx="26" cy="24" r="3" fill="#1E7B95"/></svg>`,
+  lamp:`<svg class="illu" viewBox="0 0 64 64" fill="none"><path d="M20 26l4-14h16l4 14z" fill="#e3f0f2" stroke="#0D294E" stroke-width="2.6" stroke-linejoin="round"/><path d="M32 26v22M22 52h20" stroke="#0D294E" stroke-width="2.6" stroke-linecap="round"/><path d="M22 26h20" stroke="#1E7B95" stroke-width="2.6"/></svg>`,
+  clock:`<svg class="illu" viewBox="0 0 64 64" fill="none"><circle cx="32" cy="32" r="20" fill="#e3f0f2" stroke="#0D294E" stroke-width="2.6"/><path d="M32 20v12l8 5" stroke="#1E7B95" stroke-width="2.6" stroke-linecap="round"/></svg>`,
+  cushion:`<svg class="illu" viewBox="0 0 64 64" fill="none"><rect x="12" y="16" width="40" height="32" rx="10" fill="#e3f0f2" stroke="#0D294E" stroke-width="2.6"/><path d="M20 24c4 4 4 12 0 16M44 24c-4 4-4 12 0 16" stroke="#1E7B95" stroke-width="2.2" stroke-linecap="round"/></svg>`,
+  board:`<svg class="illu" viewBox="0 0 64 64" fill="none"><path d="M18 14h22a6 6 0 0 1 6 6v30H18z" fill="#e3f0f2" stroke="#0D294E" stroke-width="2.6" stroke-linejoin="round"/><circle cx="42" cy="18" r="2.4" fill="#1E7B95"/><path d="M24 26h14M24 33h14M24 40h9" stroke="#1E7B95" stroke-width="2.2" stroke-linecap="round"/></svg>`,
+  mirror:`<svg class="illu" viewBox="0 0 64 64" fill="none"><ellipse cx="32" cy="30" rx="16" ry="20" fill="#e3f0f2" stroke="#0D294E" stroke-width="2.6"/><path d="M24 18c-3 3-4 8-3 12" stroke="#fff" stroke-width="3" stroke-linecap="round"/><path d="M24 50h16" stroke="#0D294E" stroke-width="2.6" stroke-linecap="round"/></svg>`,
+  table:`<svg class="illu" viewBox="0 0 64 64" fill="none"><rect x="12" y="22" width="40" height="7" rx="2" fill="#1E7B95"/><path d="M16 29v20M48 29v20M16 49h6M42 49h6" stroke="#0D294E" stroke-width="2.6" stroke-linecap="round"/></svg>`,
+  candle:`<svg class="illu" viewBox="0 0 64 64" fill="none"><rect x="22" y="24" width="20" height="28" rx="3" fill="#e3f0f2" stroke="#0D294E" stroke-width="2.6"/><path d="M32 24v-6" stroke="#0D294E" stroke-width="2.4" stroke-linecap="round"/><path d="M32 18c3-3 3-7 0-10-3 3-3 7 0 10z" fill="#f2a63b"/></svg>`,
+  rug:`<svg class="illu" viewBox="0 0 64 64" fill="none"><rect x="10" y="20" width="44" height="24" rx="3" fill="#e3f0f2" stroke="#0D294E" stroke-width="2.6"/><path d="M10 26h44M10 38h44" stroke="#1E7B95" stroke-width="2"/><path d="M10 18v-3M54 18v-3M10 49v-3M54 49v-3" stroke="#0D294E" stroke-width="2.4" stroke-linecap="round"/></svg>`,
+  whisk:`<svg class="illu" viewBox="0 0 64 64" fill="none"><path d="M32 50V30" stroke="#0D294E" stroke-width="3" stroke-linecap="round"/><path d="M24 30c0-10 16-10 16 0s-16 10-16 0z" fill="#e3f0f2" stroke="#1E7B95" stroke-width="2.2"/><path d="M32 16v14M26 18l6 12M38 18l-6 12" stroke="#1E7B95" stroke-width="2.2" stroke-linecap="round"/></svg>`,
+  bowl:`<svg class="illu" viewBox="0 0 64 64" fill="none"><path d="M12 28h40c0 12-9 20-20 20s-20-8-20-20z" fill="#e3f0f2" stroke="#0D294E" stroke-width="2.6" stroke-linejoin="round"/><path d="M16 28c6 4 26 4 32 0" stroke="#1E7B95" stroke-width="2.2"/></svg>`,
+  chest:`<svg class="illu" viewBox="0 0 64 64" fill="none"><rect x="12" y="24" width="40" height="24" rx="3" fill="#e3f0f2" stroke="#0D294E" stroke-width="2.6"/><path d="M12 32h40" stroke="#0D294E" stroke-width="2.4"/><rect x="29" y="29" width="6" height="6" rx="1.5" fill="#1E7B95"/><path d="M16 24c2-6 30-6 32 0" stroke="#0D294E" stroke-width="2.6"/></svg>`,
+  gift:`<svg viewBox="0 0 64 64" fill="none"><rect x="14" y="28" width="36" height="26" rx="3" fill="#fff" stroke="#0D294E" stroke-width="2.6"/><path d="M14 36h36" stroke="#0D294E" stroke-width="2.4"/><rect x="28" y="28" width="8" height="26" fill="#1E7B95"/><path d="M32 28c-6-2-12-4-12-10 0-3 5-4 7-1 3 4 5 11 5 11zM32 28c6-2 12-4 12-10 0-3-5-4-7-1-3 4-5 11-5 11z" fill="#e3f0f2" stroke="#0D294E" stroke-width="2.2" stroke-linejoin="round"/></svg>`
+};
+function logoMark(){return I.gift;}
+
+/* ---------- DONNÉES PRODUITS ---------- */
+const CATS={cuisine:"Ustensiles de cuisine",deco:"Décoration",ameublement:"Petit ameublement"};
+const PRODUCTS=[
+  // PANIERS SURPRISE (mystère) — PPS 12€ / GPS 29€
+  {id:"s1",type:"surprise",cat:"cuisine",size:"petit",name:"Panier surprise · Cuisine",price:12,old:22,desc:"Un ustensile mystère neuf (poêle, saladier, planche…). On choisit la catégorie, on garde la surprise.",icon:"gift"},
+  {id:"s2",type:"surprise",cat:"deco",size:"petit",name:"Panier surprise · Déco",price:12,old:21,desc:"Une pièce déco neuve à découvrir : cadre, bougie, petit vase… marque et design mystère.",icon:"gift"},
+  {id:"s3",type:"surprise",cat:"ameublement",size:"grand",name:"Grand panier surprise · Ameublement",price:29,old:52,desc:"Un meuble d'appoint neuf surprise : tabouret, table basse ou coffre de rangement.",icon:"gift"},
+  {id:"s4",type:"surprise",cat:"deco",size:"grand",name:"Grand panier surprise · Déco",price:29,old:48,desc:"Une grande pièce déco neuve mystère : miroir, horloge design ou tapis.",icon:"gift"},
+  {id:"s5",type:"surprise",cat:"cuisine",size:"grand",name:"Grand panier surprise · Cuisine",price:29,old:46,desc:"Un lot d'art de la table neuf et surprise, valeur garantie supérieure au prix payé.",icon:"gift"},
+  // PRODUITS VISIBLES — PPSS 18€ / GPSS 35€
+  {id:"v1",type:"visible",cat:"cuisine",size:"petit",name:"Lot de spatules silicone",price:18,old:28,desc:"Set de 3 spatules résistantes à la chaleur, neuves, invendu d'une marque d'art de la table.",icon:"whisk",vendor:"Maison Lurée",sponsor:true},
+  {id:"v2",type:"visible",cat:"cuisine",size:"petit",name:"Fouet inox professionnel",price:18,old:26,desc:"Fouet 12 fils en inox brossé, idéal pâtisserie. Neuf, jamais vendu.",icon:"whisk",vendor:"Pôele d'Or"},
+  {id:"v3",type:"visible",cat:"cuisine",size:"petit",name:"Saladier céramique émaillée",price:18,old:25,desc:"Grand saladier 2,5 L, finition émaillée mate. Pièce neuve d'un stock dormant.",icon:"bowl",vendor:"Atelier Coteaux",sponsor:true},
+  {id:"v4",type:"visible",cat:"cuisine",size:"petit",name:"Planche à découper bambou",price:18,old:24,desc:"Planche réversible en bambou massif avec rigole. Neuve, écoresponsable.",icon:"board",vendor:"Brun & Sève"},
+  {id:"v5",type:"visible",cat:"deco",size:"petit",name:"Vase grès émaillé",price:18,old:32,desc:"Vase artisanal en grès, teinte sauge. Invendu neuf d'une collection précédente.",icon:"vase",vendor:"Atelier Coteaux",sponsor:true},
+  {id:"v6",type:"visible",cat:"deco",size:"petit",name:"Cadre photo chêne clair",price:18,old:24,desc:"Cadre 20×30 en chêne FSC, verre anti-reflet. Neuf en stock.",icon:"frame",vendor:"Norvent",sponsor:true},
+  {id:"v7",type:"visible",cat:"deco",size:"petit",name:"Bougie parfumée végétale",price:18,old:22,desc:"Cire de soja, parfum figue & cèdre, 40 h de combustion. Neuve.",icon:"candle",vendor:"Maison Lurée",sponsor:true},
+  {id:"v8",type:"visible",cat:"deco",size:"grand",name:"Miroir mural rond Ø60",price:35,old:55,desc:"Miroir rond cerclage métal noir mat, fixation incluse. Pièce neuve.",icon:"mirror",vendor:"Studio Calé",sponsor:true},
+  {id:"v9",type:"visible",cat:"deco",size:"grand",name:"Horloge murale design",price:35,old:50,desc:"Horloge silencieuse Ø35, aiguilles laiton. Invendu neuf.",icon:"clock",vendor:"Studio Calé",sponsor:true},
+  {id:"v10",type:"visible",cat:"deco",size:"grand",name:"Tapis tissé 120×170",price:35,old:58,desc:"Tapis motif berbère, coton recyclé. Neuf, fin de série.",icon:"rug",vendor:"Norvent",sponsor:true},
+  {id:"v11",type:"visible",cat:"ameublement",size:"grand",name:"Tabouret bois massif",price:35,old:49,desc:"Tabouret hêtre huilé, assise galbée, empilable. Neuf en stock.",icon:"chair",vendor:"Brun & Sève"},
+  {id:"v12",type:"visible",cat:"ameublement",size:"grand",name:"Table basse compacte",price:35,old:60,desc:"Table basse 60×60, plateau chêne, piètement métal. Invendu neuf.",icon:"table",vendor:"Norvent",sponsor:true},
+  {id:"v13",type:"visible",cat:"ameublement",size:"grand",name:"Coffre de rangement",price:35,old:58,desc:"Coffre banc 80 cm, couvercle capitonné. Neuf, marque partenaire.",icon:"chest",vendor:"Studio Calé",sponsor:true},
+  {id:"v14",type:"visible",cat:"deco",size:"grand",name:"Lampe à poser céramique",price:35,old:52,desc:"Pied céramique grès, abat-jour lin. Pièce neuve d'un stock dormant.",icon:"lamp",vendor:"Atelier Coteaux",sponsor:true},
+  {id:"v15",type:"visible",cat:"deco",size:"petit",name:"Coussin lin lavé",price:18,old:27,desc:"Coussin 45×45 garni, lin lavé teinte argile. Neuf, fin de collection.",icon:"cushion",vendor:"Maison Lurée",sponsor:true}
+];
+
+/* ---------- VENDEURS PARTENAIRES (mis en avant = payant, type référencement) ---------- */
+const VENDORS=[
+  {name:"Maison Lurée",color:"#1E7B95",cat:"Art de la table & déco",sponsor:true,products:4,note:"Mise en avant Premium"},
+  {name:"Atelier Coteaux",color:"#0D294E",cat:"Céramique artisanale",sponsor:true,products:3,note:"Mise en avant Premium"},
+  {name:"Studio Calé",color:"#cf7d12",cat:"Déco murale & rangement",sponsor:true,products:3,note:"Mise en avant Visible"},
+  {name:"Norvent",color:"#2f8f6b",cat:"Ameublement scandinave",sponsor:true,products:3,note:"Mise en avant Visible"},
+  {name:"Brun & Sève",color:"#7a5a3a",cat:"Bois & ameublement",sponsor:false,products:2,note:"Référencement standard"},
+  {name:"Pôele d'Or",color:"#155f74",cat:"Cuisson & ustensiles",sponsor:false,products:1,note:"Référencement standard"}
+];
+
+/* ============================================================ ÉTAT */
+let ctx="perso";          // perso | pro
+let activeCat="all";
+const cart={};            // id -> {product, qty}  (mémoire vive)
+
+function setMark(){
+  document.getElementById('navMark').innerHTML=logoMark();
+  document.getElementById('footMark').innerHTML=logoMark();
+}
+
+/* ---------- NAV dynamique selon contexte ---------- */
+const NAV_PERSO=[["#/accueil","Accueil"],["#/boutique","Boutique"],["#/surprise","Paniers surprise"],["#/sponsors","Marques à la une"],["#/parrainage","Parrainage"],["#/apropos","Concept"]];
+const NAV_PRO=[["#/pro","Espace marques"],["#/vendre","Vendre mes invendus"],["#/visibilite","Booster ma visibilité"],["#/influenceurs","Agence d'influenceurs"],["#/createur","Créateurs"]];
+function renderNav(){
+  const links=ctx==="perso"?NAV_PERSO:NAV_PRO;
+  const cur=location.hash||"#/accueil";
+  document.getElementById('navLinks').innerHTML=links.map(([h,t])=>
+    `<a href="${h}" class="${cur===h?'active':''}" onclick="closeBurger()">${t}</a>`).join('');
+  document.querySelectorAll('.seg button').forEach(b=>b.classList.toggle('on',b.dataset.ctx===ctx));
+}
+function setCtx(c){
+  ctx=c; renderNav();
+  location.hash=c==="perso"?"#/accueil":"#/pro";
+}
+function toggleBurger(){document.getElementById('navLinks').classList.toggle('open');}
+function closeBurger(){document.getElementById('navLinks').classList.remove('open');}
+
+/* ============================================================ HELPERS UI */
+const eur=n=>n.toFixed(2).replace('.',',')+' €';
+function pct(old,p){return Math.round((1-p/old)*100);}
+function mediaClass(t){return t==="surprise"?"m-surprise":"m-visible";}
+
+function productCard(p){
+  const isS=p.type==="surprise";
+  const media= isS
+    ? `<div class="media m-surprise" onclick="peek(this)" title="Catégorie connue, contenu surprise">
+         <div class="surprise-mark"><span class="q">?</span><small>${CATS[p.cat]}</small></div>
+         <div class="peek-hint">contenu mystère · valeur garantie</div>
+       </div>`
+    : `<div class="media m-visible">${I[p.icon]||I.gift}</div>`;
+  const badges=`<div class="badges">
+      ${isS?'<span class="tag tag-surprise">★ Surprise</span>':'<span class="tag tag-visible">Visible</span>'}
+      ${p.sponsor?'<span class="tag tag-sponsor">Sponsorisé</span>':''}
+    </div>`;
+  const vendor=p.vendor?`<div class="vendor">vendu par <b style="color:var(--navy)">${p.vendor}</b>${p.sponsor?' · à la une':''}</div>`:'<div class="vendor">Encor\'Utile sélection</div>';
+  return `<article class="pcard">
+    <div style="position:relative">${media}${badges}</div>
+    <div class="pbody">
+      ${vendor}
+      <h4>${p.name}</h4>
+      <p class="desc">${p.desc}</p>
+      <div class="price-row">
+        <span class="price">${eur(p.price)}</span>
+        <span class="old">${eur(p.old)}</span>
+        <span class="save">−${pct(p.old,p.price)}%</span>
+      </div>
+      <div style="display:flex;gap:6px;margin-bottom:10px"><span class="tag tag-verite">✓ Prix vérité</span></div>
+      <button class="btn btn-primary btn-block btn-sm" onclick="addToCart('${p.id}')">Ajouter au panier</button>
+    </div>
+  </article>`;
+}
+function peek(el){
+  el.classList.toggle('peeked');
+  const m=el.querySelector('.surprise-mark .q');
+  if(el.classList.contains('peeked')){m.textContent='🎁';el.querySelector('.peek-hint').textContent='le contenu reste une surprise jusqu\'au retrait !';}
+  else{m.textContent='?';el.querySelector('.peek-hint').textContent='contenu mystère · valeur garantie';}
+}
+
+/* ============================================================ PANIER */
+function addToCart(id){
+  const p=PRODUCTS.find(x=>x.id===id);
+  if(!cart[id])cart[id]={product:p,qty:0};
+  cart[id].qty++;
+  updateCartUI(); openCart();
+}
+function removeFromCart(id){delete cart[id];updateCartUI();}
+function changeQty(id,d){if(!cart[id])return;cart[id].qty+=d;if(cart[id].qty<=0)delete cart[id];updateCartUI();}
+function cartCount(){return Object.values(cart).reduce((s,i)=>s+i.qty,0);}
+function cartTotal(){return Object.values(cart).reduce((s,i)=>s+i.qty*i.product.price,0);}
+function cartSavings(){return Object.values(cart).reduce((s,i)=>s+i.qty*(i.product.old-i.product.price),0);}
+function openCart(){document.getElementById('drawer').classList.add('show');document.getElementById('scrim').classList.add('show');}
+function closeCart(){document.getElementById('drawer').classList.remove('show');document.getElementById('scrim').classList.remove('show');}
+function updateCartUI(){
+  const c=cartCount();const badge=document.getElementById('cartCount');
+  badge.textContent=c;badge.style.display=c?'flex':'none';
+  const items=document.getElementById('ditems');const foot=document.getElementById('dfoot');
+  const list=Object.values(cart);
+  if(!list.length){
+    items.innerHTML=`<div class="cart-empty"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg><p>Votre panier est vide.<br>Trouvez votre bonne affaire !</p></div>`;
+    foot.innerHTML=`<a href="#/boutique" class="btn btn-primary btn-block" onclick="closeCart()">Voir la boutique</a>`;
+    return;
   }
+  items.innerHTML=list.map(({product:p,qty})=>{
+    const isS=p.type==="surprise";
+    const thumb=isS?`<div class="cthumb" style="background:var(--amber-tint);color:var(--amber-deep);font-family:'Bricolage Grotesque';font-weight:800;font-size:1.4rem">?</div>`
+                   :`<div class="cthumb" style="background:var(--teal-tint)">${I[p.icon]}</div>`;
+    return `<div class="citem">${thumb}
+      <div class="cmid"><h5>${p.name}</h5><span class="cprice">${eur(p.price)}</span>
+        <div class="qty"><button onclick="changeQty('${p.id}',-1)" aria-label="moins">−</button><span>${qty}</span><button onclick="changeQty('${p.id}',1)" aria-label="plus">+</button></div>
+        <div class="rm" style="cursor:pointer" onclick="removeFromCart('${p.id}')">Retirer</div>
+      </div></div>`;
+  }).join('');
+  foot.innerHTML=`
+    <div class="row"><span>Sous-total</span><span class="mono">${eur(cartTotal())}</span></div>
+    <div class="row" style="color:var(--green)"><span>Économie « prix vérité »</span><span class="mono">−${eur(cartSavings())}</span></div>
+    <div class="row tot"><span>Total</span><b>${eur(cartTotal())}</b></div>
+    <a href="#/panier" class="btn btn-amber btn-block" onclick="closeCart()">Passer au retrait</a>
+    <p class="note" style="text-align:center;margin:.6rem 0 0">Retrait gratuit en magasin partenaire · paiement sécurisé</p>`;
 }
 
-function render(data){
-  const count = Number(data.count || 0);
-  const thresholds = Array.isArray(data.thresholds) ? data.thresholds : [];
-  document.getElementById('count').textContent = count.toLocaleString();
-  const max = Math.max(count, thresholds.length ? Math.max(...thresholds.map(t=>t.value||0)) : count || 100);
-  const pct = Math.min(100, Math.round((count / (max || 1)) * 100));
-  const fill = document.getElementById('fill');
-  fill.style.width = pct + '%';
-  fill.textContent = pct + '%';
+/* ============================================================ ROUTAGE */
+function go(){
+  closeBurger();
+  const route=(location.hash||"#/accueil").replace("#/","");
+  // synchroniser le contexte avec la route
+  if(NAV_PRO.some(([h])=>h==="#/"+route)||["vendre","visibilite","influenceurs","pro","createur"].includes(route)){ctx="pro";}
+  else if(["accueil","boutique","surprise","sponsors","parrainage","apropos","panier"].includes(route)){ctx="perso";}
+  renderNav();
+  const app=document.getElementById('app');
+  app.innerHTML=(PAGES[route]||PAGES.accueil)();
+  window.scrollTo({top:0,behavior:'instant'in document.documentElement.style?'instant':'auto'});
+  // post-render hooks
+  if(route==="boutique"||route==="surprise")filterShop(activeCat);
+}
+window.addEventListener('hashchange',go);
 
-  const thContainer = document.getElementById('thresholds');
-  thContainer.innerHTML = '';
-  let next = null;
-  thresholds.sort((a,b)=>a.value-b.value).forEach(t=>{
-    const unlocked = count >= t.value;
-    const el = document.createElement('div');
-    el.className = 'th ' + (unlocked ? 'unlocked' : 'locked');
-    el.innerHTML = `<strong>${t.value}</strong> — <span style="opacity:0.85">${t.label || ''}</span>`;
-    thContainer.appendChild(el);
-    if(!unlocked && next===null) next = t;
-  });
-
-  document.getElementById('nextThreshold').textContent = next ? `Prochain palier : ${next.value} — ${next.label || ''}` : 'Tous les paliers débloqués 🎉';
-  document.getElementById('updated').textContent = new Date().toLocaleString();
+/* ---------- filtre boutique ---------- */
+function filterShop(cat){
+  activeCat=cat;
+  const grid=document.getElementById('shopGrid');
+  if(!grid)return;
+  const mode=grid.dataset.mode;
+  let list=PRODUCTS.filter(p=>mode==="surprise"?p.type==="surprise":true);
+  if(cat!=="all")list=list.filter(p=>p.cat===cat);
+  // sponsors d'abord (référencement payant), puis le reste
+  list.sort((a,b)=>(b.sponsor?1:0)-(a.sponsor?1:0));
+  grid.innerHTML=list.length?list.map(productCard).join(''):`<div class="empty">Aucun produit dans cette catégorie pour le moment.</div>`;
+  document.querySelectorAll('#shopChips .chip').forEach(c=>c.classList.toggle('on',c.dataset.cat===cat));
+}
+function chipsHTML(){
+  return `<div class="filters" id="shopChips">
+    <button class="chip on" data-cat="all" onclick="filterShop('all')">Tout</button>
+    <button class="chip" data-cat="cuisine" onclick="filterShop('cuisine')">Cuisine</button>
+    <button class="chip" data-cat="deco" onclick="filterShop('deco')">Décoration</button>
+    <button class="chip" data-cat="ameublement" onclick="filterShop('ameublement')">Ameublement</button>
+  </div>`;
 }
 
-document.getElementById('refresh').addEventListener('click', loadData);
-document.getElementById('copy').addEventListener('click', ()=>{
-  navigator.clipboard?.writeText(location.href).then(()=>alert('Lien copié !'));
-});
+/* small svg helpers for inline checks/arrows */
+const chk=`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>`;
+const arr=`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>`;
 
-loadData();
-setInterval(loadData, AUTO_REFRESH_SECONDS * 1000);
+/* ============================================================ PAGES */
+const PAGES={};
+
+/* ---------- ACCUEIL (perso) ---------- */
+PAGES.accueil=()=>`
+<section class="hero">
+  <div class="wrap">
+    <div class="hero-grid">
+      <div>
+        <span class="eyebrow">Anti-gaspillage · loi AGEC</span>
+        <h1>Les invendus<br>qu'on <em>veut tous</em>.</h1>
+        <p class="lead">Des produits <b>neufs</b> invendus par les marques — cuisine, déco, petit ameublement — à petit prix. En panier surprise ou en achat classique, à récupérer près de chez vous.</p>
+        <div class="hero-cta">
+          <a href="#/boutique" class="btn btn-primary">Explorer la boutique ${arr}</a>
+          <a href="#/surprise" class="btn btn-amber">★ Voir les paniers surprise</a>
+        </div>
+        <div class="hero-stats">
+          <div class="s"><b>−40 %</b><span>en moyenne vs magasin</span></div>
+          <div class="s"><b>0 €</b><span>de frais pour les marques</span></div>
+          <div class="s"><b>3</b><span>catégories utiles</span></div>
+        </div>
+      </div>
+      <div class="hero-art">
+        <div class="ribbon"></div><div class="blob"></div>
+        <div class="gift-stack">
+          <div class="gcard g1"><div class="gc-top"><span class="tag tag-surprise">★ Surprise</span></div>
+            <div class="gbox" style="background:var(--amber-tint)"><div style="font-family:'Bricolage Grotesque';font-weight:800;font-size:3rem;color:var(--amber-deep)">?</div></div>
+            <div style="display:flex;align-items:baseline;gap:.4rem"><span class="price">12,00 €</span><span class="old">22,00 €</span></div>
+            <div style="font-size:.72rem;color:var(--muted);margin-top:2px">Panier cuisine mystère</div>
+          </div>
+          <div class="gcard g2"><div class="gc-top"><span class="tag tag-visible">Visible</span></div>
+            <div class="gbox" style="background:var(--teal-tint)">${I.vase}</div>
+            <div style="display:flex;align-items:baseline;gap:.4rem"><span class="price">18,00 €</span><span class="old">32,00 €</span></div>
+            <div style="font-size:.72rem;color:var(--muted);margin-top:2px">Vase grès émaillé</div>
+          </div>
+          <div class="gcard g3"><div class="gc-top"><span class="tag tag-sponsor">Sponsorisé</span></div>
+            <div class="gbox" style="background:var(--teal-tint)">${I.mirror}</div>
+            <div style="display:flex;align-items:baseline;gap:.4rem"><span class="price">35,00 €</span><span class="old">55,00 €</span></div>
+            <div style="font-size:.72rem;color:var(--muted);margin-top:2px">Miroir mural · Studio Calé</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="block">
+  <div class="wrap">
+    <div class="sec-head center">
+      <span class="eyebrow">Deux façons d'acheter</span>
+      <h2>La surprise, ou le choix.</h2>
+      <p>Le même produit neuf, à vous de choisir l'expérience — et le prix.</p>
+    </div>
+    <div class="duo">
+      <div class="offer surprise">
+        <div class="ic">${I.gift.replace('class="illu"','')}</div>
+        <h3>Le panier surprise</h3>
+        <p style="color:var(--navy-soft);margin:.2rem 0 0">Vous choisissez la catégorie, on garde le mystère sur la marque et le modèle. Le meilleur prix.</p>
+        <ul>
+          <li>${chk} Petit panier dès <b class="mono">&nbsp;12 €</b> · Grand panier dès <b class="mono">&nbsp;29 €</b></li>
+          <li>${chk} Valeur du contenu toujours supérieure au prix payé</li>
+          <li>${chk} L'effet « ouverture de cadeau » à chaque retrait</li>
+        </ul>
+      </div>
+      <div class="offer visible">
+        <div class="ic">${'<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>'}</div>
+        <h3>L'achat classique</h3>
+        <p style="color:var(--navy-soft);margin:.2rem 0 0">Vous voyez exactement le produit, sa marque et sa photo. Toujours moins cher qu'en magasin.</p>
+        <ul>
+          <li>${chk} Petit prix <b class="mono">&nbsp;18 €</b> · Grand prix <b class="mono">&nbsp;35 €</b></li>
+          <li>${chk} Photo, description et marque affichées</li>
+          <li>${chk} « Prix vérité » : la valeur magasin est vérifiée</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="block" style="background:var(--white);border-top:1px solid var(--line);border-bottom:1px solid var(--line)">
+  <div class="wrap">
+    <div class="sec-head center"><span class="eyebrow">Comment ça marche</span><h2>De la commande au retrait, en 4 temps.</h2></div>
+    <div class="steps">
+      <div class="step"><div class="n">01</div><h4>Je choisis</h4><p>Une catégorie en surprise, ou un produit visible avec sa photo et sa marque.</p></div>
+      <div class="step"><div class="n">02</div><h4>Je réserve & paie</h4><p>Paiement sécurisé en ligne. Le produit m'est mis de côté chez le commerçant partenaire.</p></div>
+      <div class="step"><div class="n">03</div><h4>Je récupère</h4><p>Retrait gratuit en magasin près de chez moi. La livraison arrivera plus tard.</p></div>
+      <div class="step"><div class="n">04</div><h4>Je profite</h4><p>Un produit neuf, utile, à petit prix — et un invendu sauvé du gaspillage.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="block">
+  <div class="wrap">
+    <div class="sec-head"><span class="eyebrow">Nos rayons</span><h2>Trois catégories vraiment utiles.</h2></div>
+    <div class="cats">
+      <div class="cat" onclick="location.hash='#/boutique'"><div class="cic">${'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 3v8M19 3v8M9 3v4a4 4 0 0 1-8 0V3M5 11v10M19 11v10M19 3a4 4 0 0 1 0 8"/></svg>'}</div><h3>Ustensiles de cuisine</h3><p>Cuisson, préparation, art de la table : poêles, saladiers, planches, fouets…</p><span class="arrow">Explorer ${arr}</span></div>
+      <div class="cat" onclick="location.hash='#/boutique'"><div class="cic">${I.frame.replace('class="illu"','').replace(/width="2.4"/g,'width="2"')}</div><h3>Décoration</h3><p>Murale & d'ambiance : cadres, miroirs, horloges, bougies, vases, textiles…</p><span class="arrow">Explorer ${arr}</span></div>
+      <div class="cat" onclick="location.hash='#/boutique'"><div class="cic">${I.chair.replace('class="illu"','')}</div><h3>Petit ameublement</h3><p>Assises, tables basses, tabourets, coffres de rangement…</p><span class="arrow">Explorer ${arr}</span></div>
+    </div>
+  </div>
+</section>
+
+<section class="block">
+  <div class="wrap">
+    <div class="panel" style="background:linear-gradient(120deg,var(--navy),#13325c);color:#fff;border:none">
+      <div class="split" style="gap:30px">
+        <div>
+          <span class="eyebrow" style="color:#7fc6d8">Bon plan partagé</span>
+          <h2 style="color:#fff;font-size:1.9rem;margin:.4rem 0 .6rem">Parrainez, gagnez 5 € chacun.</h2>
+          <p style="color:#bcd0e2;margin:0 0 18px">Votre filleul fait sa première commande : il reçoit 5 € de réduction, et vous 5 € de crédit. Sans limite de parrainages.</p>
+          <a href="#/parrainage" class="btn btn-amber">Obtenir mon code de parrainage</a>
+        </div>
+        <div style="display:flex;justify-content:center">
+          <div style="background:rgba(255,255,255,.08);border:1px dashed rgba(255,255,255,.3);border-radius:18px;padding:24px;text-align:center;min-width:220px">
+            <div style="font-size:.75rem;color:#9fb3c8;letter-spacing:.1em;text-transform:uppercase">Votre code</div>
+            <div class="mono" style="font-size:1.7rem;font-weight:700;color:#fff;letter-spacing:.1em;margin:.4rem 0">KESHA-5EUR</div>
+            <div style="font-size:.8rem;color:#7fc6d8">5 € pour vous · 5 € pour eux</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>`;
+
+/* ---------- BOUTIQUE ---------- */
+PAGES.boutique=()=>`
+<section class="block">
+  <div class="wrap">
+    <div class="shop-head">
+      <div class="sec-head" style="margin:0">
+        <span class="eyebrow">Boutique · particuliers</span>
+        <h2>Tous les produits</h2>
+        <p style="margin-top:.4rem">Paniers surprise et produits visibles. Les marques <b>à la une</b> apparaissent en premier.</p>
+      </div>
+    </div>
+    ${chipsHTML()}
+    <div style="height:18px"></div>
+    <div class="grid" id="shopGrid" data-mode="all"></div>
+  </div>
+</section>`;
+
+/* ---------- PANIERS SURPRISE ---------- */
+PAGES.surprise=()=>`
+<section class="block" style="background:linear-gradient(165deg,#fff8ec,#fdf1de00)">
+  <div class="wrap">
+    <div class="sec-head" style="max-width:680px">
+      <span class="eyebrow" style="color:var(--amber-deep)">★ L'expérience surprise</span>
+      <h2>Le plaisir d'ouvrir un cadeau, le prix en moins.</h2>
+      <p>Vous choisissez la <b>catégorie</b> et la <b>taille</b> du panier. La marque et le modèle restent un mystère jusqu'au retrait. La valeur du contenu est toujours <b>supérieure au prix payé</b> — c'est notre garantie « prix vérité ».</p>
+    </div>
+    <div class="duo" style="margin-bottom:34px">
+      <div class="panel" style="display:flex;gap:16px;align-items:center">
+        <div style="width:60px;height:60px;flex:0 0 60px;border-radius:16px;background:var(--amber-tint);display:flex;align-items:center;justify-content:center;font-family:'Bricolage Grotesque';font-weight:800;font-size:1.8rem;color:var(--amber-deep)">12€</div>
+        <div><h3 style="margin:0">Petit panier surprise</h3><p style="margin:.2rem 0 0;color:var(--muted);font-size:.9rem">Un objet déco ou de cuisine neuf · valeur jusqu'à 22 €</p></div>
+      </div>
+      <div class="panel" style="display:flex;gap:16px;align-items:center">
+        <div style="width:60px;height:60px;flex:0 0 60px;border-radius:16px;background:var(--teal-tint);display:flex;align-items:center;justify-content:center;font-family:'Bricolage Grotesque';font-weight:800;font-size:1.5rem;color:var(--teal-deep)">29€</div>
+        <div><h3 style="margin:0">Grand panier surprise</h3><p style="margin:.2rem 0 0;color:var(--muted);font-size:.9rem">Un meuble d'appoint ou grande déco neuf · valeur jusqu'à 52 €</p></div>
+      </div>
+    </div>
+    ${chipsHTML()}
+    <div style="height:18px"></div>
+    <div class="grid" id="shopGrid" data-mode="surprise"></div>
+  </div>
+</section>`;
+
+/* ---------- MARQUES À LA UNE (vendeurs partenaires sponsorisés) ---------- */
+PAGES.sponsors=()=>`
+<section class="block">
+  <div class="wrap">
+    <div class="sec-head" style="max-width:680px">
+      <span class="eyebrow">Marques à la une</span>
+      <h2>Les vendeurs partenaires mis en avant.</h2>
+      <p>Comme un moteur de recherche, certaines marques paient pour une <b>meilleure visibilité</b>. Nous l'affichons toujours clairement avec le label <b>« Sponsorisé »</b> — la transparence d'abord.</p>
+    </div>
+    <div class="sponsor-note">
+      ${'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>'}
+      <span><b>Comment se fait le classement ?</b> Les marques <b>« Sponsorisées »</b> (forfait Visible ou Premium) remontent en haut de liste et de la boutique. Les autres apparaissent en <b>référencement standard</b>, classées par pertinence. Un vendeur sponsorisé n'achète pas de fausses notes : seul son <b>placement</b> est mis en avant.</span>
+    </div>
+    ${VENDORS.map((v,i)=>`
+      <div class="vrow ${v.sponsor?'is-sponsor':''}">
+        <div class="rank">${String(i+1).padStart(2,'0')}</div>
+        <div class="vmono" style="background:${v.color}">${v.name.split(' ').map(w=>w[0]).join('').slice(0,2)}</div>
+        <div class="vinfo">
+          <div class="vh"><h4>${v.name}</h4>${v.sponsor?'<span class="tag tag-sponsor">Sponsorisé</span>':'<span class="tag tag-cat">Standard</span>'}</div>
+          <p>${v.cat} · ${v.note}</p>
+        </div>
+        <div class="vmeta"><b>${v.products}</b>produit${v.products>1?'s':''} en ligne</div>
+      </div>`).join('')}
+    <div style="margin-top:26px;display:flex;gap:12px;flex-wrap:wrap">
+      <a href="#/boutique" class="btn btn-primary">Voir leurs produits ${arr}</a>
+      <a href="#/visibilite" class="btn btn-ghost">Vous êtes une marque ? Être mis en avant</a>
+    </div>
+  </div>
+</section>`;
+
+/* ---------- PARRAINAGE ---------- */
+PAGES.parrainage=()=>`
+<section class="block">
+  <div class="wrap">
+    <div class="split">
+      <div>
+        <span class="eyebrow">Programme de parrainage</span>
+        <h2 style="font-size:2.2rem;margin:.4rem 0 .7rem">5 € pour vous,<br>5 € pour vos proches.</h2>
+        <p style="color:var(--muted)">Partagez votre code. À la première commande de votre filleul, il obtient <b>5 € de réduction</b> et vous recevez <b>5 € de crédit</b> utilisable sur tout le site. Un levier de fidélisation simple et un bouche-à-oreille qui récompense tout le monde.</p>
+        <ul class="checklist" style="margin-top:14px">
+          <li>${chk} Aucun plafond de parrainages</li>
+          <li>${chk} Crédit cumulable avec les promotions</li>
+          <li>${chk} Suivi de vos filleuls depuis votre compte</li>
+        </ul>
+        <p class="note" style="margin-top:14px">Vous créez du contenu ? Le parrainage devient un vrai revenu avec notre <a href="#/createur" style="color:var(--teal-deep);font-weight:600">programme créateurs</a>.</p>
+      </div>
+      <div class="form">
+        <h3 style="margin-bottom:6px">Votre code de parrainage</h3>
+        <div style="background:var(--navy);border-radius:14px;padding:20px;text-align:center;margin:12px 0 16px">
+          <div class="mono" style="font-size:1.9rem;font-weight:700;color:#fff;letter-spacing:.12em">KESHA-5EUR</div>
+        </div>
+        <button class="btn btn-amber btn-block" onclick="this.textContent='Lien copié ✓'">Copier mon lien d'invitation</button>
+        <div style="height:18px"></div>
+        <div class="field"><label>Un code reçu d'un ami ?</label><input placeholder="EX : KESHA-5EUR"></div>
+        <button class="btn btn-ghost btn-block" onclick="this.textContent='5 € appliqués à votre 1ʳᵉ commande ✓'">Appliquer le code</button>
+      </div>
+    </div>
+  </div>
+</section>`;
+
+/* ---------- CONCEPT / À PROPOS ---------- */
+PAGES.apropos=()=>`
+<section class="block">
+  <div class="wrap">
+    <div class="sec-head" style="max-width:720px">
+      <span class="eyebrow">Le concept</span>
+      <h2>Donner une seconde chance commerciale aux invendus neufs.</h2>
+      <p>Chaque année, des produits neufs non alimentaires dorment dans les stocks des marques sans jamais être vendus. Encor'Utile les rend visibles auprès de consommateurs en quête de bonnes affaires — un modèle <b>gagnant-gagnant</b> et responsable.</p>
+    </div>
+    <div class="feat">
+      <div class="fcard"><div class="fic">${'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M3 12h18M3 18h12"/></svg>'}</div><h3>Le besoin</h3><p>Lutter contre le gaspillage, consommer de façon responsable et accéder à des produits utiles à petit prix.</p></div>
+      <div class="fcard"><div class="fic">${'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 1 0-7.78 7.78L12 21.23l8.84-8.84a5.5 5.5 0 0 0 0-7.78z"/></svg>'}</div><h3>La proposition de valeur</h3><p>Les marques valorisent leurs invendus ; les clients achètent neuf, moins cher. Tout le monde y gagne, la planète aussi.</p></div>
+      <div class="fcard"><div class="fic">${'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>'}</div><h3>Le persona</h3><p>« L'économe urbain » : étudiant ou jeune actif au budget serré qui veut aménager son logement malin et près de chez lui.</p></div>
+    </div>
+  </div>
+</section>
+<section class="block" style="background:var(--white);border-top:1px solid var(--line)">
+  <div class="wrap">
+    <div class="split">
+      <div>
+        <span class="eyebrow">Notre modèle économique</span>
+        <h2 style="font-size:1.9rem;margin:.4rem 0 .6rem">Comment Encor'Utile gagne sa vie.</h2>
+        <p style="color:var(--muted)">Trois sources de revenus complémentaires, pensées dès le business model :</p>
+        <ul class="checklist" style="margin-top:10px">
+          <li>${chk} <b>Commission de 30 %</b> sur chaque vente (la marque garde 70 %)</li>
+          <li>${chk} <b>Mise en avant payante</b> des marques partenaires (visibilité, type référencement)</li>
+          <li>${chk} <b>Parrainage & créateurs</b> pour fidéliser et augmenter le volume de commandes</li>
+        </ul>
+      </div>
+      <div class="panel">
+        <h3 style="font-size:1.1rem">Répartition d'une vente</h3>
+        <div class="share"><div class="seg70">Marque · 70 %</div><div class="seg30">Encor'Utile · 30 %</div></div>
+        <p class="note">La commission couvre la mise en ligne, la promotion, la gestion commerciale, administrative et financière. La marque ne supporte aucun coût tant qu'aucune vente n'est réalisée.</p>
+      </div>
+    </div>
+    <div style="margin-top:36px">
+      <span class="eyebrow">L'équipe projet</span>
+      <h3 style="font-size:1.3rem;margin:.4rem 0 14px">Cinq porteuses & porteur de projet · BUT GEA</h3>
+      <div class="feat" style="grid-template-columns:repeat(5,1fr)">
+        ${["Elsa Jubeaux·Marketing","Jovenca Lumeus·Communication","Célia Chestier·Finance","Keshawashen Nagendran·Gestion & Tech","Aure Salibur·Gestion"].map(p=>{const[n,r]=p.split('·');return `<div class="fcard" style="text-align:center;padding:18px"><div style="width:52px;height:52px;border-radius:50%;margin:0 auto 10px;background:var(--teal);color:#fff;display:flex;align-items:center;justify-content:center;font-family:'Bricolage Grotesque';font-weight:800">${n.split(' ').map(x=>x[0]).join('')}</div><div style="font-weight:600;font-size:.92rem">${n}</div><div style="font-size:.78rem;color:var(--muted)">${r}</div></div>`}).join('')}
+      </div>
+    </div>
+  </div>
+</section>`;
+
+/* ---------- PANIER / RETRAIT ---------- */
+PAGES.panier=()=>{
+  const list=Object.values(cart);
+  if(!list.length)return `<section class="block"><div class="wrap" style="text-align:center;padding:40px 0">
+    <div style="font-size:3rem">🛒</div><h2 style="margin:.4rem 0">Votre panier est vide</h2>
+    <p style="color:var(--muted)">Direction la boutique pour trouver votre bonne affaire.</p>
+    <a href="#/boutique" class="btn btn-primary" style="margin-top:10px">Voir la boutique ${arr}</a></div></section>`;
+  return `<section class="block"><div class="wrap">
+    <div class="sec-head" style="margin-bottom:24px"><span class="eyebrow">Validation · retrait</span><h2>Votre commande</h2></div>
+    <div class="co-grid">
+      <div class="panel">
+        ${list.map(({product:p,qty})=>`<div class="co-line"><span>${qty} × ${p.name}${p.type==='surprise'?' <span class="tag tag-surprise">surprise</span>':''}</span><b>${eur(p.price*qty)}</b></div>`).join('')}
+        <div style="margin-top:18px">
+          <h3 style="font-size:1.05rem;margin-bottom:10px">Mode de récupération</h3>
+          <label style="display:flex;gap:10px;align-items:flex-start;border:1.5px solid var(--teal);border-radius:12px;padding:14px;cursor:pointer"><input type="radio" name="reco" checked style="margin-top:4px"><span><b>Retrait gratuit en magasin partenaire</b><br><span class="note">Vous récupérez votre produit chez le commerçant proche de chez vous.</span></span></label>
+          <label style="display:flex;gap:10px;align-items:flex-start;border:1.5px solid var(--line);border-radius:12px;padding:14px;margin-top:10px;cursor:not-allowed;opacity:.6"><input type="radio" name="reco" disabled style="margin-top:4px"><span><b>Livraison à domicile</b> <span class="tag tag-cat">bientôt</span><br><span class="note">Option payante prévue pour les prochaines années.</span></span></label>
+        </div>
+      </div>
+      <div class="panel" style="position:sticky;top:90px">
+        <h3 style="font-size:1.1rem;margin-bottom:10px">Récapitulatif</h3>
+        <div class="kv"><span>Sous-total</span><b>${eur(cartTotal())}</b></div>
+        <div class="kv" style="color:var(--green)"><span>Économie « prix vérité »</span><b>−${eur(cartSavings())}</b></div>
+        <div class="kv"><span>Retrait en magasin</span><b>Gratuit</b></div>
+        <div class="kv" style="font-size:1.15rem"><span><b>Total</b></span><b style="color:var(--navy)">${eur(cartTotal())}</b></div>
+        <div class="field" style="margin-top:14px"><label>Code de parrainage</label><input placeholder="KESHA-5EUR"></div>
+        <button class="btn btn-amber btn-block" onclick="this.textContent='Commande confirmée ✓ (démo)';">Payer & réserver</button>
+        <p class="note" style="text-align:center;margin-top:10px">Paiement sécurisé · démo non marchande</p>
+      </div>
+    </div>
+  </div></section>`;
+};
+
+/* ============================================================ ESPACE PRO */
+
+/* ---------- PRO : ESPACE MARQUES (accueil pro) ---------- */
+PAGES.pro=()=>`
+<section class="hero" style="padding:56px 0 56px;background:linear-gradient(160deg,#eef6f7,#f4f8f9)">
+  <div class="wrap">
+    <div class="hero-grid">
+      <div>
+        <span class="eyebrow">Espace Pros &amp; Marques</span>
+        <h1 style="font-size:clamp(2.1rem,4.6vw,3.4rem)">Transformez vos invendus en chiffre d'affaires.</h1>
+        <p class="lead">Vos produits neufs non alimentaires dorment en stock ? Encor'Utile les valorise, sans frais fixe et sans risque. Vous gardez 70 % du prix de vente.</p>
+        <div class="hero-cta">
+          <a href="#/vendre" class="btn btn-navy">Vendre mes invendus ${arr}</a>
+          <a href="#/visibilite" class="btn btn-ghost">Booster ma visibilité</a>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;align-self:center">
+        ${[["0 €","frais d'inscription"],["70 %","reversés à la marque"],["≤ 30 j","délai de paiement"],["♻︎","conforme loi AGEC"]].map(([b,l])=>`<div class="panel" style="text-align:center;padding:22px"><div style="font-family:'Bricolage Grotesque';font-weight:800;font-size:1.8rem;color:var(--teal)">${b}</div><div style="font-size:.82rem;color:var(--muted)">${l}</div></div>`).join('')}
+      </div>
+    </div>
+  </div>
+</section>
+<section class="block">
+  <div class="wrap">
+    <div class="sec-head center"><span class="eyebrow">3 façons de travailler avec nous</span><h2>Un partenariat à la carte.</h2></div>
+    <div class="feat">
+      <div class="fcard"><div class="fic">${'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 7h-9M14 17H5M17 17a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM7 13a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/></svg>'}</div><h3>Écouler mes invendus</h3><p>Je confie mes produits neufs, vous les vendez. Je touche 70 %, sans coût tant qu'il n'y a pas de vente.</p><a href="#/vendre" class="btn btn-ghost btn-sm" style="margin-top:12px">En savoir plus ${arr}</a></div>
+      <div class="fcard"><div class="fic">${'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>'}</div><h3>Gagner en visibilité</h3><p>Je passe en tête de la boutique avec un forfait « à la une », signalé « Sponsorisé » — comme le référencement payant.</p><a href="#/visibilite" class="btn btn-ghost btn-sm" style="margin-top:12px">Voir les forfaits ${arr}</a></div>
+      <div class="fcard"><div class="fic">${'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>'}</div><h3>Activer des influenceurs</h3><p>Je lance une campagne avec des créateurs sélectionnés par notre agence intégrée, à la performance.</p><a href="#/influenceurs" class="btn btn-ghost btn-sm" style="margin-top:12px">Découvrir l'agence ${arr}</a></div>
+    </div>
+  </div>
+</section>`;
+
+/* ---------- PRO : VENDRE MES INVENDUS (fournisseur) ---------- */
+PAGES.vendre=()=>`
+<section class="block">
+  <div class="wrap">
+    <div class="split">
+      <div>
+        <span class="eyebrow">Dossier fournisseur</span>
+        <h2 style="font-size:2rem;margin:.4rem 0 .6rem">Vos invendus deviennent une opportunité.</h2>
+        <p style="color:var(--muted)">Encor'Utile agit comme <b>intermédiaire commercial</b>. Vos produits restent stockés chez vous ; le client les récupère directement dans votre point de vente. Aucune contrainte logistique nouvelle.</p>
+        <div class="panel" style="margin:18px 0">
+          <h3 style="font-size:1.05rem">Modalités financières</h3>
+          <div class="share"><div class="seg70">Vous · 70 %</div><div class="seg30">Encor'Utile · 30 %</div></div>
+          <div class="kv"><span>Frais d'inscription / abonnement</span><b>0 €</b></div>
+          <div class="kv"><span>Coût fixe</span><b>Aucun</b></div>
+          <div class="kv"><span>Reversement après vente</span><b>≤ 30 jours</b></div>
+        </div>
+        <ul class="checklist">
+          <li>${chk} <b>Sans risque :</b> vous ne payez rien tant qu'aucune vente n'est faite</li>
+          <li>${chk} <b>Loi AGEC :</b> vous limitez la destruction d'invendus et renforcez votre RSE</li>
+          <li>${chk} <b>Image de marque :</b> vous valorisez une démarche d'économie circulaire</li>
+          <li>${chk} <b>Stocks optimisés :</b> vous libérez de l'espace et améliorez la rotation</li>
+        </ul>
+      </div>
+      <div class="form">
+        <h3 style="margin-bottom:4px">Devenir marque partenaire</h3>
+        <p class="note" style="margin-bottom:14px">On vous recontacte sous 48 h pour démarrer.</p>
+        <div class="field"><label>Raison sociale</label><input placeholder="Nom de votre entreprise"></div>
+        <div class="field"><label>SIRET</label><input placeholder="123 456 789 00012"></div>
+        <div class="field"><label>Email professionnel</label><input type="email" placeholder="contact@votremarque.fr"></div>
+        <div class="field"><label>Type de produits invendus</label><select><option>Ustensiles de cuisine</option><option>Décoration</option><option>Petit ameublement</option><option>Plusieurs catégories</option></select></div>
+        <div class="field"><label>Volume approximatif d'invendus</label><select><option>Moins de 50 produits</option><option>50 à 200 produits</option><option>200 à 1000 produits</option><option>Plus de 1000 produits</option></select></div>
+        <button class="btn btn-navy btn-block" onclick="this.textContent='Demande envoyée ✓ — merci !'">Envoyer ma demande de partenariat</button>
+        <p class="note" style="margin-top:10px">En envoyant, vous acceptez d'être recontacté. Le contrat précise conformité produits, responsabilités et résiliation (préavis 30 j), selon le droit français.</p>
+      </div>
+    </div>
+  </div>
+</section>`;
+
+/* ---------- PRO : BOOSTER MA VISIBILITÉ (publicité / référencement payant) ---------- */
+PAGES.visibilite=()=>`
+<section class="block">
+  <div class="wrap">
+    <div class="sec-head center" style="max-width:680px">
+      <span class="eyebrow">Régie & mise en avant</span>
+      <h2>Faites remonter votre marque en tête.</h2>
+      <p>Comme un moteur de recherche, vous pouvez acheter de la visibilité. Vos produits passent devant, avec le label transparent <b>« Sponsorisé »</b>. Le placement est payant — jamais les avis clients.</p>
+    </div>
+    <div class="tiers">
+      <div class="tier"><div class="tname">Standard</div><div class="tpct">0€<small></small></div><p style="font-size:.85rem;color:var(--muted)">Référencement gratuit inclus</p><ul>
+        <li>${chk} Vos produits dans la boutique</li><li>${chk} Classement par pertinence</li><li>${chk} Page marque basique</li></ul>
+        <a href="#/vendre" class="btn btn-ghost btn-block btn-sm" style="margin-top:14px">Inclus avec le partenariat</a></div>
+      <div class="tier pop"><div class="pop-tag">Le plus choisi</div><div class="tname">Visible</div><div class="tpct">49€<small>/mois</small></div><p style="font-size:.85rem;color:var(--muted)">Remontée dans les listes</p><ul>
+        <li>${chk} Label « Sponsorisé »</li><li>${chk} Haut des résultats par catégorie</li><li>${chk} Encart sur la page d'accueil</li><li>${chk} Statistiques de vues</li></ul>
+        <button class="btn btn-primary btn-block btn-sm" style="margin-top:14px" onclick="this.textContent='Demande envoyée ✓'">Choisir Visible</button></div>
+      <div class="tier"><div class="tname">Premium</div><div class="tpct">129€<small>/mois</small></div><p style="font-size:.85rem;color:var(--muted)">Visibilité maximale</p><ul>
+        <li>${chk} Tout le forfait Visible</li><li>${chk} 1ʳᵉ position « Marques à la une »</li><li>${chk} Bannière hero rotative</li><li>${chk} Campagne influenceurs offerte (1/mois)</li></ul>
+        <button class="btn btn-navy btn-block btn-sm" style="margin-top:14px" onclick="this.textContent='Demande envoyée ✓'">Choisir Premium</button></div>
+    </div>
+    <div class="sponsor-note" style="margin-top:26px">
+      ${'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>'}
+      <span>Transparence : tout contenu sponsorisé est <b>signalé clairement</b> aux clients. Le forfait améliore votre <b>placement</b>, jamais la note ou les avis. C'est la condition d'une confiance durable côté acheteurs.</span>
+    </div>
+  </div>
+</section>`;
+
+/* ---------- PRO : AGENCE D'INFLUENCEURS ---------- */
+PAGES.influenceurs=()=>`
+<section class="block">
+  <div class="wrap">
+    <div class="sec-head" style="max-width:720px">
+      <span class="eyebrow">Agence d'influenceurs intégrée</span>
+      <h2>Des créateurs, à la performance, sans intermédiaire opaque.</h2>
+      <p>Encor'Utile met en relation les <b>marques</b> et des <b>créateurs</b> sélectionnés. Chaque créateur reçoit un <b>code unique</b> ; on suit les ventes générées et la rémunération se fait <b>à la commission</b>. Vous ne payez que ce qui vend.</p>
+    </div>
+    <div class="steps" style="margin-bottom:36px">
+      <div class="step"><div class="n">01</div><h4>Brief & sélection</h4><p>Vous fixez objectif et budget. On propose des créateurs adaptés à votre cible (l'« économe urbain »).</p></div>
+      <div class="step"><div class="n">02</div><h4>Code unique</h4><p>Chaque créateur reçoit un code traçable (ex. ELSA-DECO). Son audience profite d'une réduction.</p></div>
+      <div class="step"><div class="n">03</div><h4>Suivi des ventes</h4><p>Tableau de bord en temps réel : clics, commandes, chiffre d'affaires attribué à chaque code.</p></div>
+      <div class="step"><div class="n">04</div><h4>Commission</h4><p>Le créateur est payé sur les ventes réelles. La marque ne paie aucun coût fixe de campagne.</p></div>
+    </div>
+    <div class="split">
+      <div>
+        <h3 style="font-size:1.3rem;margin-bottom:8px">Le modèle de rémunération créateurs</h3>
+        <p style="color:var(--muted)">Trois paliers selon les ventes générées chaque mois. Plus un créateur performe, plus sa commission augmente — un système clair et réaliste.</p>
+        <div class="tiers" style="margin-top:16px;grid-template-columns:1fr 1fr 1fr">
+          <div class="tier"><div class="tname">Découverte</div><div class="tpct">8%<small></small></div><ul><li>${chk} 0 – 30 ventes/mois</li><li>${chk} Code perso</li></ul></div>
+          <div class="tier pop"><div class="pop-tag">Confirmé</div><div class="tname">Confirmé</div><div class="tpct">12%<small></small></div><ul><li>${chk} 31 – 100 ventes</li><li>${chk} Produits offerts</li></ul></div>
+          <div class="tier"><div class="tname">Ambassadeur</div><div class="tpct">15%<small></small></div><ul><li>${chk} 100+ ventes</li><li>${chk} Campagnes dédiées</li></ul></div>
+        </div>
+      </div>
+      <div class="dash">
+        <div class="dh"><div><div style="font-size:.78rem;opacity:.7">Tableau de bord créateur</div><b style="font-family:'Bricolage Grotesque';font-size:1.2rem">Elsa · @elsa.deco</b></div><div class="code">ELSA-DECO</div></div>
+        <div class="dstats">
+          <div class="dstat"><b>1 248</b><span>clics ce mois</span></div>
+          <div class="dstat"><b>86</b><span>ventes attribuées</span></div>
+          <div class="dstat"><b>312 €</b><span>commission</span></div>
+        </div>
+        <div style="font-size:.76rem;opacity:.7;margin-bottom:6px">Ventes / semaine</div>
+        <div class="bars">${[40,55,38,70,62,85,78].map(h=>`<div class="bar" style="height:${h}%"></div>`).join('')}</div>
+      </div>
+    </div>
+    <div style="margin-top:30px;display:flex;gap:12px;flex-wrap:wrap">
+      <button class="btn btn-navy" onclick="this.textContent='Brief envoyé ✓'">Lancer une campagne (marque)</button>
+      <a href="#/createur" class="btn btn-ghost">Je suis créateur, je veux m'inscrire ${arr}</a>
+    </div>
+  </div>
+</section>`;
+
+/* ---------- CRÉATEUR (inscription influenceur) ---------- */
+PAGES.createur=()=>`
+<section class="block">
+  <div class="wrap">
+    <div class="split">
+      <div>
+        <span class="eyebrow">Programme créateurs</span>
+        <h2 style="font-size:2rem;margin:.4rem 0 .6rem">Monétisez votre audience, utilement.</h2>
+        <p style="color:var(--muted)">Vous parlez d'anti-gaspillage, de bons plans, de déco maligne ? Rejoignez l'agence Encor'Utile. Vous recevez un <b>code unique</b>, votre communauté profite d'une <b>réduction</b>, et vous touchez une <b>commission</b> sur chaque vente — de 8 % à 15 % selon votre palier.</p>
+        <ul class="checklist" style="margin-top:14px">
+          <li>${chk} Inscription gratuite, sans engagement</li>
+          <li>${chk} Tableau de bord clair (clics, ventes, gains)</li>
+          <li>${chk} Paliers évolutifs Découverte → Confirmé → Ambassadeur</li>
+          <li>${chk} Produits offerts dès le palier Confirmé</li>
+        </ul>
+      </div>
+      <div class="form">
+        <h3 style="margin-bottom:4px">Devenir créateur partenaire</h3>
+        <p class="note" style="margin-bottom:14px">Réponse sous 72 h après étude de votre profil.</p>
+        <div class="field"><label>Nom / pseudo</label><input placeholder="@votre_compte"></div>
+        <div class="field"><label>Plateforme principale</label><select><option>Instagram</option><option>TikTok</option><option>YouTube</option><option>Blog / autre</option></select></div>
+        <div class="field"><label>Taille de communauté</label><select><option>Moins de 5 000</option><option>5 000 – 50 000</option><option>50 000 – 200 000</option><option>200 000+</option></select></div>
+        <div class="field"><label>Email</label><input type="email" placeholder="vous@email.fr"></div>
+        <button class="btn btn-primary btn-block" onclick="this.textContent='Candidature envoyée ✓'">Rejoindre l'agence</button>
+      </div>
+    </div>
+  </div>
+</section>`;
+
+/* ============================================================ INIT */
+setMark();
+updateCartUI();
+go();
 </script>
 </body>
 </html>
